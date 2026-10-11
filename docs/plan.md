@@ -1,10 +1,10 @@
-# Ventana v1 Implementation Plan
+# Weather App v1 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build Ventana v1, a bilingual weather web app where the screen is the city's live sky, with a 24-hour ruler to travel through the day.
+**Goal:** Build Weather App v1, a bilingual weather web app where the screen is the city's live sky, with a 24-hour ruler to travel through the day.
 
-**Architecture:** Next.js 16 App Router. Server Components fetch and validate Open-Meteo data (cached) and render a single Client Component (`Ventana`) that owns one piece of state, the selected time. Everything visual (sky colors, ink colors, metrics) is derived from the data plus that time by pure, unit-tested functions in `src/lib`.
+**Architecture:** Next.js 16 App Router. Server Components fetch and validate Open-Meteo data (cached) and render a single Client Component (`WeatherApp`) that owns one piece of state, the selected time. Everything visual (sky colors, ink colors, metrics) is derived from the data plus that time by pure, unit-tested functions in `src/lib`.
 
 **Tech Stack:** Next.js 16.4, React 19.3, TypeScript 5 (strict), Tailwind CSS 4, Motion 14, Zod 4, suncalc 2, culori 4, Vitest 5 + Testing Library + jsdom, Playwright 1.64, ESLint + Prettier, GitHub Actions, Vercel.
 
@@ -28,14 +28,15 @@
 ## Workflow per block (overrides the default "Commit" step)
 
 Each block is one branch. The last step of every block is **"Close the block"**:
+
 1. Run `npm run lint && npm run typecheck && npm test` (plus `npm run test:e2e` once it exists). Everything passes.
 2. `git add -A`. Do **not** commit.
-3. Explain the block in chat (Spanish): key decisions, TypeScript notes vs plain JS, server-side notes. Then a 3–5 question multiple-choice quiz (AskUserQuestion); explain wrong answers.
-4. The owner reviews `git diff --staged`. Apply requested changes.
-5. Propose the atomic commits (Conventional Commits message + files each) and wait for the OK. Commit, push, open the PR (what / why / how to test; no tool attribution).
-6. CI green → ask for the OK → merge to `main` with a merge commit (`gh pr merge --merge`) → announce the merge.
+3. Explain the block in chat (Spanish): key decisions, TypeScript notes vs plain JS, server-side notes. Then a multiple-choice quiz of 8–12 questions (AskUserQuestion, up to 4 per round) that mixes concepts with questions about the block's actual code (show the snippet: what it does, why it is written that way, what breaks if it changes). Explain wrong answers.
+4. The owner reviews the staged diff in the editor. Apply requested changes.
+5. Once the diff is approved: make the atomic commits (Conventional Commits), push, open the PR (what / why / how to test; no tool attribution).
+6. The owner merges the PR on GitHub (merge commit). Pull `main` before starting the next block.
 
-The "Suggested commits" line in each block is the starting proposal for step 5.
+The "Suggested commits" line in each block is the commit split for step 5.
 
 ## Review Focus
 
@@ -53,9 +54,9 @@ The "Suggested commits" line in each block is the starting proposal for step 5.
 
 **Files:** Create the Next.js app in the repo root (keeps `docs/`). Modify: `tsconfig.json`, `package.json`, `src/app/page.tsx`, `src/app/globals.css`, `.gitignore`. Create: `.nvmrc` (`24`).
 
-- [ ] **Step 1:** In a scratch dir run `npx create-next-app@16.4.0 ventana --ts --tailwind --eslint --app --src-dir --import-alias "@/*" --react-compiler --use-npm --disable-git --no-agent-feedback`, then copy everything except `node_modules` into the repo root and run `npm install` there. (The repo is not empty, so scaffold outside it.)
+- [ ] **Step 1:** In a scratch dir run `npx create-next-app@16.4.0 weather-app --ts --tailwind --eslint --app --src-dir --import-alias "@/*" --react-compiler --use-npm --disable-git --no-agent-feedback`, then copy everything except `node_modules` into the repo root and run `npm install` there. (The repo is not empty, so scaffold outside it.)
 - [ ] **Step 2:** In `tsconfig.json` set `"strict": true` and add `"noUncheckedIndexedAccess": true`.
-- [ ] **Step 3:** Replace the boilerplate home page with `<main>Ventana</main>`, empty `globals.css` down to `@import "tailwindcss";`, and delete unused files in `public/`.
+- [ ] **Step 3:** Replace the boilerplate home page with `<main>Weather App</main>`, empty `globals.css` down to `@import "tailwindcss";`, and delete unused files in `public/`.
 - [ ] **Step 4:** Add the script `"typecheck": "tsc --noEmit"`. Run `npm run lint && npm run typecheck && npm run build`. Expected: all succeed.
 
 ### Task 1.2: Formatting and test tooling
@@ -86,6 +87,7 @@ All pure functions, built test-first (write test → see it fail → implement �
 **Files:** Create: `src/lib/units.ts`, `src/lib/units.test.ts`. Delete: `src/lib/sanity.test.ts`.
 
 **Interfaces — Produces:**
+
 - `type TemperatureUnit = 'c' | 'f'`
 - `UNIT_COOKIE = 'unit'`
 - `parseUnit(value: string | undefined): TemperatureUnit` — `'f'` only for `'f'`, else `'c'`.
@@ -101,6 +103,7 @@ All pure functions, built test-first (write test → see it fail → implement �
 **Files:** Create: `src/lib/slug.ts`, `src/lib/slug.test.ts`, `src/lib/coordinates.ts`, `src/lib/coordinates.test.ts`.
 
 **Interfaces — Produces:**
+
 - `slugify(name: string): string` — NFD, strip diacritics, lowercase, runs of non `[a-z0-9]` → `-`, trim `-`.
 - `placePath(name: string, id: number): string` → `` `${slugify(name) || 'city'}-${id}` ``.
 - `parsePlaceParam(param: string): { slug: string; id: number } | null` — matches `^(?:(.*)-)?(\d+)$`; id must be a positive safe integer.
@@ -116,6 +119,7 @@ All pure functions, built test-first (write test → see it fail → implement �
 **Files:** Create: `src/lib/time.ts`, `src/lib/time.test.ts`.
 
 **Interfaces — Produces:**
+
 - `type SunTimes = { day: number; sunrise: number; sunset: number }` (all unix seconds; `day` = local midnight, as Open-Meteo's `daily.time`).
 - `formatTime(unix: number, timeZone: string, locale: string): string` → `"19:42"`.
 - `formatHour(unix: number, timeZone: string, locale: string): string` → `"16"`.
@@ -134,6 +138,7 @@ All pure functions, built test-first (write test → see it fail → implement �
 **Files:** Create: `src/lib/weather-codes.ts`, `src/lib/weather-codes.test.ts`, `src/i18n/config.ts`, `src/i18n/config.test.ts`, `src/i18n/en.ts`, `src/i18n/es.ts`, `src/i18n/get-dictionary.ts`.
 
 **Interfaces — Produces:**
+
 - `type WeatherCondition = 'clear' | 'mainlyClear' | 'partlyCloudy' | 'overcast' | 'fog' | 'drizzle' | 'freezingDrizzle' | 'rain' | 'freezingRain' | 'snow' | 'snowGrains' | 'rainShowers' | 'snowShowers' | 'thunderstorm' | 'thunderstormHail' | 'unknown'`
 - `conditionFromCode(code: number): WeatherCondition` — WMO: 0 clear · 1 mainlyClear · 2 partlyCloudy · 3 overcast · 45, 48 fog · 51, 53, 55 drizzle · 56, 57 freezingDrizzle · 61, 63, 65 rain · 66, 67 freezingRain · 71, 73, 75 snow · 77 snowGrains · 80, 81, 82 rainShowers · 85, 86 snowShowers · 95 thunderstorm · 96, 99 thunderstormHail · anything else unknown.
 - `isRainy(condition: WeatherCondition): boolean` — true for drizzle, freezingDrizzle, rain, freezingRain, rainShowers, thunderstorm, thunderstormHail.
@@ -145,28 +150,28 @@ All pure functions, built test-first (write test → see it fail → implement �
 
 Dictionary keys and copy (EN / ES):
 
-| Key | en | es |
-|---|---|---|
-| `brand` | VENTANA | VENTANA |
-| `status.live` / `.forecast` / `.earlier` | LIVE / FORECAST / EARLIER | EN VIVO / PRONÓSTICO / MÁS TEMPRANO |
-| `status.backToLive` (aria) | Back to now | Volver al ahora |
-| `feelsLike` | Feels like | Sensación térmica |
-| `metrics.wind` / `.humidity` / `.precipitation` / `.pressure` / `.visibility` | Wind / Humidity / Precipitation / Barometer / Visibility | Viento / Humedad / Precipitación / Barómetro / Visibilidad |
-| `sun.sunrise` / `.sunset` | Sunrise / Sunset | Alba / Ocaso |
-| `timeline.title` / `.now` / `.label` | 24-hour timeline / now / Time of day | Cronología de 24 horas / hora actual / Hora del día |
-| `footer.updated` | Updated | Actualización |
-| `degrees` | degrees | grados |
-| `yourLocation` | Your location | Tu ubicación |
-| `search.open` / `.placeholder` / `.close` | Search city / Search city… / Close search | Buscar ciudad / Buscar ciudad… / Cerrar búsqueda |
-| `search.useMyLocation` | Use my location | Usar mi ubicación |
-| `search.noResults` / `.unavailable` | We couldn't find that city / Search is unavailable right now | No encontramos esa ciudad / No pudimos buscar ahora |
-| `search.locationDenied` / `.locationUnavailable` | Location permission was denied / We couldn't get your location | Se denegó el permiso de ubicación / No pudimos obtener tu ubicación |
-| `notFound.title` / `.body` | City not found / Try searching for another one. | Ciudad no encontrada / Probá buscar otra. |
-| `error.title` / `.retry` | We couldn't load the weather / Try again | No pudimos cargar el clima / Reintentar |
-| `unitLabel` / `languageLabel` (aria) | Temperature unit / Language | Unidad de temperatura / Idioma |
-| `conditions` | `Record<WeatherCondition, string>`, standard wording, e.g. partlyCloudy "Partly cloudy" | e.g. "Parcialmente nublado" |
-| `compass` | `Record<CompassPoint, string>`: N NE E SE S SW W NW | N NE E SE S SO O NO |
-| `hemispheres` | N S E W | N S E O |
+| Key                                                                           | en                                                                                      | es                                                                  |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `brand`                                                                       | WEATHER APP                                                                             | WEATHER APP                                                         |
+| `status.live` / `.forecast` / `.earlier`                                      | LIVE / FORECAST / EARLIER                                                               | EN VIVO / PRONÓSTICO / MÁS TEMPRANO                                 |
+| `status.backToLive` (aria)                                                    | Back to now                                                                             | Volver al ahora                                                     |
+| `feelsLike`                                                                   | Feels like                                                                              | Sensación térmica                                                   |
+| `metrics.wind` / `.humidity` / `.precipitation` / `.pressure` / `.visibility` | Wind / Humidity / Precipitation / Barometer / Visibility                                | Viento / Humedad / Precipitación / Barómetro / Visibilidad          |
+| `sun.sunrise` / `.sunset`                                                     | Sunrise / Sunset                                                                        | Alba / Ocaso                                                        |
+| `timeline.title` / `.now` / `.label`                                          | 24-hour timeline / now / Time of day                                                    | Cronología de 24 horas / hora actual / Hora del día                 |
+| `footer.updated`                                                              | Updated                                                                                 | Actualización                                                       |
+| `degrees`                                                                     | degrees                                                                                 | grados                                                              |
+| `yourLocation`                                                                | Your location                                                                           | Tu ubicación                                                        |
+| `search.open` / `.placeholder` / `.close`                                     | Search city / Search city… / Close search                                               | Buscar ciudad / Buscar ciudad… / Cerrar búsqueda                    |
+| `search.useMyLocation`                                                        | Use my location                                                                         | Usar mi ubicación                                                   |
+| `search.noResults` / `.unavailable`                                           | We couldn't find that city / Search is unavailable right now                            | No encontramos esa ciudad / No pudimos buscar ahora                 |
+| `search.locationDenied` / `.locationUnavailable`                              | Location permission was denied / We couldn't get your location                          | Se denegó el permiso de ubicación / No pudimos obtener tu ubicación |
+| `notFound.title` / `.body`                                                    | City not found / Try searching for another one.                                         | Ciudad no encontrada / Probá buscar otra.                           |
+| `error.title` / `.retry`                                                      | We couldn't load the weather / Try again                                                | No pudimos cargar el clima / Reintentar                             |
+| `unitLabel` / `languageLabel` (aria)                                          | Temperature unit / Language                                                             | Unidad de temperatura / Idioma                                      |
+| `conditions`                                                                  | `Record<WeatherCondition, string>`, standard wording, e.g. partlyCloudy "Partly cloudy" | e.g. "Parcialmente nublado"                                         |
+| `compass`                                                                     | `Record<CompassPoint, string>`: N NE E SE S SW W NW                                     | N NE E SE S SO O NO                                                 |
+| `hemispheres`                                                                 | N S E W                                                                                 | N S E O                                                             |
 
 - [ ] **Step 1: Tests:** `conditionFromCode(2) === 'partlyCloudy'`, `(99) 'thunderstormHail'`, `(42) 'unknown'`; `isRainy('rainShowers') === true`, `isRainy('snow') === false`. `matchLocale('es-AR,es;q=0.9,en;q=0.8', undefined) === 'es'`; `('en-US,en;q=0.9,es;q=0.8', undefined) === 'en'`; `('fr-FR,fr;q=0.9', undefined) === 'en'`; `('fr;q=0.9, es;q=0.8', undefined) === 'es'`; `('es;q=0', undefined) === 'en'`; `(null, undefined) === 'en'`; `('*', undefined) === 'en'`; `('en', 'es') === 'es'`; `('es', 'fr') === 'es'` (invalid cookie ignored). `isLocale('es') === true`, `isLocale('fr') === false`.
 - [ ] **Step 2:** Run → FAIL. Implement. Run → PASS. Run `npm run typecheck` → PASS (proves `es` has every key).
@@ -181,6 +186,7 @@ Dictionary keys and copy (EN / ES):
 **Files:** Create: `src/lib/sky/sun.ts`, `src/lib/sky/sun.test.ts`, `src/lib/sky/palette.ts`, `src/lib/sky/palette.test.ts`. Install: `suncalc culori` (+ `@types/suncalc @types/culori` as dev deps if the packages ship no types).
 
 **Interfaces — Produces:**
+
 - `sunAltitude(unix: number, latitude: number, longitude: number): number` — degrees (`suncalc.getPosition(...).altitude * 180 / Math.PI`).
 - `type SkyColors = { top: string; mid: string; bottom: string }` — hex `#rrggbb`.
 - `SKY_KEYFRAMES: readonly { altitude: number; colors: SkyColors }[]`, ascending:
@@ -204,6 +210,7 @@ Dictionary keys and copy (EN / ES):
 **Files:** Create: `src/lib/sky/contrast.ts`, `src/lib/sky/contrast.test.ts`, `src/lib/sky/theme.ts`, `src/lib/sky/theme.test.ts`.
 
 **Interfaces — Produces:**
+
 - `LIGHT_INK = '#ffffff'`, `DARK_INK = '#050312'` (near black so mid-gray backgrounds still reach 4.5:1), `MIN_CONTRAST = 4.5`, `SECONDARY_ALPHA = 0.6`.
 - `type Ink = { primary: string; secondary: string }` — `primary` hex; `secondary` is `rgb(r g b / a)`.
 - `pickInk(background: string): Ink` — primary = whichever of LIGHT/DARK has the higher `culori.wcagContrast` with the background. Secondary alpha starts at `SECONDARY_ALPHA` and rises in 0.02 steps (max 1) until the ink blended over the background (`culori.interpolate([background, primary], 'rgb')(alpha)`) reaches `MIN_CONTRAST`.
@@ -224,6 +231,7 @@ Dictionary keys and copy (EN / ES):
 **Files:** Create: `src/lib/weather/types.ts`, `src/lib/weather/schema.ts`, `src/lib/weather/normalize.ts`, `src/lib/weather/normalize.test.ts`, `src/lib/weather/__fixtures__/buenos-aires.json` (a real response with the exact query from Global Constraints), `src/lib/errors.ts`. Install: `zod server-only`.
 
 **Interfaces — Produces:**
+
 - `type Place = { id: number | null; name: string; region?: string; country?: string; latitude: number; longitude: number }`.
 - `type HourPoint` as in spec §5, except `precipitationProbability: number | null` and `visibility: number | null`. Open-Meteo returns `null` for these on some models; the UI shows "—".
 - `type Forecast = { place: Place; timezone: string; timezoneAbbreviation: string; current: HourPoint; hours: HourPoint[]; sun: SunTimes[]; fetchedAt: number }` (`SunTimes` from `@/lib/time`; `fetchedAt` = `current.time`).
@@ -239,6 +247,7 @@ Dictionary keys and copy (EN / ES):
 **Files:** Create: `src/lib/weather/get-forecast.ts`, `src/lib/weather/get-forecast.test.ts`, `src/lib/geocoding/schema.ts`, `src/lib/geocoding/geocoding.ts`, `src/lib/geocoding/geocoding.test.ts`.
 
 **Interfaces — Produces:**
+
 - `getForecast(place: Place): Promise<Forecast>` — `fetch(url, { next: { revalidate: 600 } })`. `!res.ok` → `UpstreamError(…, res.status)`; schema failure → `UpstreamError('invalid forecast response')`.
 - `searchPlaces(query: string, locale: Locale): Promise<Place[]>` — trims; fewer than 2 chars → `[]` without fetching. Fetches `…/v1/search?name=&count=5&language=` with `revalidate: 86400`. A missing `results` key means `[]`. `region` = `admin1`.
 - `getPlaceById(id: number, locale: Locale): Promise<Place | null>` — `…/v1/get?id=&language=`. HTTP 400 with `{ error: true }` → `null`; other non-ok → `UpstreamError`.
@@ -254,6 +263,7 @@ Dictionary keys and copy (EN / ES):
 **Files:** Create: `src/app/api/search/route.ts`, `src/app/api/search/route.test.ts`.
 
 **Interfaces — Produces:** `GET(request: Request): Promise<Response>`.
+
 - `q` longer than 100 chars → 400 `{ error: 'query_too_long' }`.
 - Invalid `lang` → `en`.
 - Success → 200 `{ results: Place[] }` with `Cache-Control: public, s-maxage=3600`.
@@ -278,13 +288,14 @@ Dictionary keys and copy (EN / ES):
 
 ### Task 5.2: Layout, pages and the shared place view
 
-**Files:** Delete: `src/app/page.tsx`, `src/app/layout.tsx`. Create: `src/app/[lang]/layout.tsx`, `src/app/[lang]/page.tsx`, `src/app/[lang]/[place]/page.tsx`, `src/components/PlaceView.tsx`, `src/components/Ventana.tsx` (temporary: renders place name, temperature and status as plain text).
+**Files:** Delete: `src/app/page.tsx`, `src/app/layout.tsx`. Create: `src/app/[lang]/layout.tsx`, `src/app/[lang]/page.tsx`, `src/app/[lang]/[place]/page.tsx`, `src/components/PlaceView.tsx`, `src/components/WeatherApp.tsx` (temporary: renders place name, temperature and status as plain text).
 
 **Interfaces:**
+
 - Consumes: `getForecast`, `getPlaceById`, `parsePlaceParam`, `placePath`, `parseCoordinates`, `isLocale`, `getDictionary`, `parseUnit`, `UNIT_COOKIE`.
 - Produces:
-  - `PlaceView({ place, locale }: { place: Place; locale: Locale })` — async Server Component: reads the unit cookie, `getForecast(place)`, renders `<Ventana forecast={…} initialUnit={…} locale={…} dict={…} />`.
-  - `Ventana` props: `{ forecast: Forecast; initialUnit: TemperatureUnit; locale: Locale; dict: Dictionary }` (`'use client'`).
+  - `PlaceView({ place, locale }: { place: Place; locale: Locale })` — async Server Component: reads the unit cookie, `getForecast(place)`, renders `<WeatherApp forecast={…} initialUnit={…} locale={…} dict={…} />`.
+  - `WeatherApp` props: `{ forecast: Forecast; initialUnit: TemperatureUnit; locale: Locale; dict: Dictionary }` (`'use client'`).
 - `[lang]/layout.tsx` is the root layout: `isLocale(lang)` or `notFound()`; `generateStaticParams` returns both locales; `<html lang={lang}>`.
 - `[lang]/page.tsx`:
   - `lat`/`lon` present → `parseCoordinates` → `null` → `redirect(`/${lang}`)`; valid → place `{ id: null, name: dict.yourLocation, … }`.
@@ -292,7 +303,7 @@ Dictionary keys and copy (EN / ES):
 - `[place]/page.tsx`:
   - `parsePlaceParam` null → `notFound()`; `getPlaceById` null → `notFound()`.
   - Slug ≠ `slugify(place.name)` → `permanentRedirect(`/${lang}/${placePath(place.name, id)}`)`.
-- `generateMetadata`: title `` `${place.name} — Ventana` ``; `alternates.languages` points to the same path under the other locale. Add the comment `// shortcut: alternate URL reuses this locale's slug and redirects to the canonical one; resolve per-locale names if SEO matters`.
+- `generateMetadata`: title `` `${place.name} — Weather App` ``; `alternates.languages` points to the same path under the other locale. Add the comment `// shortcut: alternate URL reuses this locale's slug and redirects to the canonical one; resolve per-locale names if SEO matters`.
 
 - [ ] **Step 1:** Implement. Run `npm run build` → PASS. Run `npm run dev`, open `http://localhost:3000/`: it redirects to `/en` and shows "Buenos Aires" and a temperature.
 
@@ -331,6 +342,7 @@ Dictionary keys and copy (EN / ES):
 **Files:** Create: `src/components/Sky.tsx`, `src/lib/scene.ts`, `src/lib/scene.test.ts`. Modify: `src/app/globals.css`, `src/app/[lang]/layout.tsx`.
 
 **Interfaces — Produces:**
+
 - `type Scene = { point: HourPoint; status: TimelineStatus; condition: WeatherCondition; sun: SunTimes | null; daylight: number | null; theme: SkyTheme }`.
 - `deriveScene(forecast: Forecast, selected: number): Scene`:
   - `point` = `forecast.current` when the status is `live`, else `hours[nearestHourIndex]`.
@@ -339,16 +351,17 @@ Dictionary keys and copy (EN / ES):
   - Raining = `isRainy(condition) || point.precipitation > 0`.
 - `Sky()` — Server Component in the layout. Layers: a full-screen gradient `linear-gradient(to bottom, var(--sky-top), var(--sky-mid), var(--sky-bottom))`, the horizon haze, the diffuse cloud (`opacity: var(--cloud-opacity)`) and the SVG `feTurbulence` grain at opacity 0.06. `aria-hidden`.
 - `globals.css`: register `@property` (`syntax: '<color>'`, `inherits: true`) for the 9 color variables, plus `--cloud-opacity` as `<number>`. `:root { transition: <each var> 600ms ease }`, disabled under `prefers-reduced-motion: reduce`.
-- `Ventana` renders `<style>{themeToCss(scene.theme)}</style>`. The server HTML therefore paints the right sky on first load. Because `<Sky>` persists in the layout, client navigation changes `:root` values and CSS animates them.
+- `WeatherApp` renders `<style>{themeToCss(scene.theme)}</style>`. The server HTML therefore paints the right sky on first load. Because `<Sky>` persists in the layout, client navigation changes `:root` values and CSS animates them.
 
 - [ ] **Step 1: Tests:** with the fixture, `deriveScene(f, f.current.time)` → `status 'live'` and `point === f.current`; `deriveScene(f, f.hours[10].time)` → `'forecast'` and `point === f.hours[10]`; `deriveScene(f, f.hours[0].time)` → `'earlier'`; at local 03:00, `daylight === null`.
 - [ ] **Step 2:** Run → FAIL. Implement. Run → PASS.
 
 ### Task 6.3: Screen components
 
-**Files:** Create: `src/components/Header.tsx`, `src/components/LocalClock.tsx`, `src/components/SunArc.tsx`, `src/components/Temperature.tsx`, `src/components/Metrics.tsx`, `src/components/Footer.tsx`, `src/components/Metrics.test.tsx`, `src/components/Header.test.tsx`. Modify: `src/components/Ventana.tsx`. Install: `motion`.
+**Files:** Create: `src/components/Header.tsx`, `src/components/LocalClock.tsx`, `src/components/SunArc.tsx`, `src/components/Temperature.tsx`, `src/components/Metrics.tsx`, `src/components/Footer.tsx`, `src/components/Metrics.test.tsx`, `src/components/Header.test.tsx`. Modify: `src/components/WeatherApp.tsx`. Install: `motion`.
 
 **Interfaces — Produces** (all presentational, props only):
+
 - `Header({ place, forecast, status, unit, onUnitChange, locale, dict, onOpenSearch, onBackToLive })`:
   - The status button calls `onBackToLive` and is only enabled when not live.
   - Unit toggle: two `aria-pressed` buttons, labelled by `dict.unitLabel`.
@@ -359,7 +372,7 @@ Dictionary keys and copy (EN / ES):
 - `Temperature({ celsius, unit, condition, feelsLikeCelsius, dict })` — the number is wrapped in Motion `AnimatePresence` keyed by the displayed value (y 12 px → 0, 300 ms).
 - `Metrics({ point, dict })` — wind `"18 km/h SE"`, humidity `%`, precipitation probability `%` or `—`, pressure `hPa` (rounded).
 - `Footer({ forecast, locale, dict })` — updated time, place + `formatCoordinates`, visibility in km (1 decimal under 10 km, else integer) or `—`.
-- `Ventana` holds `unit` state (initialized from `initialUnit`). The toggle writes the `unit` cookie (same attributes as above). It wraps everything in `<MotionConfig reducedMotion="user">`. Layout follows the design at ≥ 768 px, with a single centered column below.
+- `WeatherApp` holds `unit` state (initialized from `initialUnit`). The toggle writes the `unit` cookie (same attributes as above). It wraps everything in `<MotionConfig reducedMotion="user">`. Layout follows the design at ≥ 768 px, with a single centered column below.
 
 - [ ] **Step 1: Tests:**
   - `Metrics` with `windSpeed 18.4, windDirection 135, humidity 72, precipitationProbability null, pressure 1016.2` and the `es` dict → shows `18 km/h`, `SE`, `72%`, `—`, `1016 hPa`, `Barómetro`.
@@ -374,9 +387,10 @@ Dictionary keys and copy (EN / ES):
 
 ### Task 7.1: Ruler with native range input
 
-**Files:** Create: `src/components/Timeline.tsx`, `src/components/Timeline.test.tsx`. Modify: `src/components/Ventana.tsx`.
+**Files:** Create: `src/components/Timeline.tsx`, `src/components/Timeline.test.tsx`. Modify: `src/components/WeatherApp.tsx`.
 
 **Interfaces — Produces:**
+
 - `Timeline({ hours, value, onChange, timeZone, locale, unit, dict, now })`.
 - The visual ruler: an hour tick and label per point, a temperature above, a needle at `value`, and a header row (`dict.timeline.title`, `now` time, country).
 - On top sits an `<input type="range" min={hours[0].time} max={hours[23].time} step={60}>` (`opacity-0`, full size, `aria-label={dict.timeline.label}`).
@@ -384,20 +398,20 @@ Dictionary keys and copy (EN / ES):
 - Arrow keys move ±3600 s (clamped, `preventDefault`); Home/End stay native.
 - Focus ring on the needle via Tailwind `peer-focus-visible`.
 - Below 768 px, labels show only for hours where `formatHour % 3 === 0`.
-- `Ventana` adds the state `selected` (initial `forecast.current.time`), `onBackToLive` → `setSelected(forecast.current.time)`, and `deriveScene(forecast, selected)` on every render.
+- `WeatherApp` adds the state `selected` (initial `forecast.current.time`), `onBackToLive` → `setSelected(forecast.current.time)`, and `deriveScene(forecast, selected)` on every render.
 
 - [ ] **Step 1: Tests:**
   - Focus the slider, press `ArrowRight` → `onChange(value + 3600)`.
   - At the max, `ArrowRight` → `onChange(max)`.
   - `aria-valuetext` matches `/^\d{2}:\d{2}, \d+ degrees$/`.
-  - Rendering `Ventana` with the fixture and pressing `ArrowRight` on the slider changes the status text from `LIVE` to `FORECAST`; clicking the status returns to `LIVE`.
+  - Rendering `WeatherApp` with the fixture and pressing `ArrowRight` on the slider changes the status text from `LIVE` to `FORECAST`; clicking the status returns to `LIVE`.
 - [ ] **Step 2:** Run → FAIL. Implement. Run → PASS.
 
 ### Task 7.2: Wheel scrubbing
 
-**Files:** Create: `src/lib/hooks/use-wheel-scrub.ts`, `src/lib/hooks/use-wheel-scrub.test.tsx`. Modify: `src/components/Ventana.tsx`.
+**Files:** Create: `src/lib/hooks/use-wheel-scrub.ts`, `src/lib/hooks/use-wheel-scrub.test.tsx`. Modify: `src/components/WeatherApp.tsx`.
 
-**Interfaces — Produces:** `useWheelScrub({ enabled, onDelta }: { enabled: boolean; onDelta: (seconds: number) => void }): void`. It listens on `window` for `wheel` (`passive: true`) and calls `onDelta(Math.round(event.deltaY * 36))` (≈ 100 px per notch → 1 h). `Ventana` clamps to the window and disables it while search is open.
+**Interfaces — Produces:** `useWheelScrub({ enabled, onDelta }: { enabled: boolean; onDelta: (seconds: number) => void }): void`. It listens on `window` for `wheel` (`passive: true`) and calls `onDelta(Math.round(event.deltaY * 36))` (≈ 100 px per notch → 1 h). `WeatherApp` clamps to the window and disables it while search is open.
 
 - [ ] **Step 1: Tests:** a `wheel` event with `deltaY: 100` → `onDelta(3600)`; with `enabled: false` → not called; after unmount → not called.
 - [ ] **Step 2:** Run → FAIL. Implement. Run → PASS.
@@ -409,9 +423,10 @@ Dictionary keys and copy (EN / ES):
 
 ### Task 8.1: Search overlay
 
-**Files:** Create: `src/components/SearchOverlay.tsx`, `src/components/SearchOverlay.test.tsx`, `src/lib/hooks/use-debounced-value.ts`. Modify: `src/components/Ventana.tsx`, `src/components/Header.tsx`.
+**Files:** Create: `src/components/SearchOverlay.tsx`, `src/components/SearchOverlay.test.tsx`, `src/lib/hooks/use-debounced-value.ts`. Modify: `src/components/WeatherApp.tsx`, `src/components/Header.tsx`.
 
 **Interfaces — Produces:**
+
 - `useDebouncedValue<T>(value: T, delayMs: number): T`.
 - `SearchOverlay({ open, onClose, locale, dict })`:
   - Wrapped in `AnimatePresence`: fade + `backdrop-filter: blur(16px)` and dimming, 250 ms.
@@ -420,7 +435,7 @@ Dictionary keys and copy (EN / ES):
   - `ArrowDown`/`ArrowUp` move; `Enter` → `router.push(`/${locale}/${placePath(name, id)}`)` and close; `Esc` and a click on the backdrop → `onClose`.
   - Focus goes to the input on open and back to the trigger on close.
   - Messages: `dict.search.noResults` (empty list), `dict.search.unavailable` (non-ok or network error).
-- `Ventana`: `searchOpen` state. It opens from the Header city name or the search button, and from the `/` key unless focus is in an input.
+- `WeatherApp`: `searchOpen` state. It opens from the Header city name or the search button, and from the `/` key unless focus is in an input.
 
 - [ ] **Step 1: Tests** (fake timers, mocked `fetch`, mocked `next/navigation`):
   - Typing `co` → one fetch after 300 ms with `q=co&lang=en`.
