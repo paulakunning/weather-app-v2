@@ -1,130 +1,135 @@
-# Ventana — Especificación técnica (v1)
+# Ventana — Technical Specification (v1)
 
-> Fecha: 2026-10-11 · Estado: aprobada en conversación, pendiente de revisión escrita
-> Diseño de referencia: [`docs/design/main-desktop.png`](design/main-desktop.png) (Figma: archivo "Weather App", frame `1:274`)
+> Date: 2026-10-11 · Status: approved in conversation, pending written review
+> Design reference: [`docs/design/main-desktop.png`](design/main-desktop.png) (Figma file "Weather App", frame `1:274`)
 
-## 1. Objetivo
+## 1. Goal
 
-Rehacer desde cero la weather app del bootcamp (2022, CRA + Chakra + OpenWeather) como una pieza de portfolio para búsquedas de **front end semi senior / design engineer**.
+Rebuild the 2022 bootcamp weather app (CRA + Chakra + OpenWeather) from scratch as a portfolio piece for **semi-senior front-end / design engineer** roles.
 
-La idea: **la pantalla es el cielo de la ciudad en este momento**. Sin tarjetas ni íconos: la atmósfera (un degradé calculado con datos reales) comunica el clima y la tipografía lleva los datos. Una regla de 24 horas permite "viajar" por el día y ver cómo cambian el cielo y los datos.
+The idea: **the screen is the sky of the city right now**. No cards, no icons: the atmosphere (a gradient computed from real data) communicates the weather, and typography carries the data. A 24-hour ruler lets you "travel" through the day and watch the sky and the data change.
 
-Criterios de éxito:
-- Se ve como el diseño de Figma, con datos reales de cualquier ciudad.
-- Se siente fluida: las transiciones de cielo son continuas.
-- Accesible (WCAG AA) y rápida (Lighthouse mobile: Performance ≥ 90, Accesibilidad ≥ 95).
-- El código se puede explicar en una entrevista: cada decisión está documentada acá.
+Success criteria:
+- It looks like the Figma design, with real data for any city.
+- It feels fluid: sky transitions are continuous.
+- Accessible (WCAG AA) and fast (Lighthouse mobile: Performance ≥ 90, Accessibility ≥ 95).
+- Every decision can be explained in an interview: they are all documented here.
 
-## 2. Alcance
+## 2. Scope
 
-### Entra en v1
-1. Pantalla principal del diseño con datos reales (Open-Meteo).
-2. Cielo calculado: degradé según la altura real del sol, la nubosidad y la lluvia.
-3. Regla de 24 h interactiva: al moverla, cambian el cielo, la temperatura, los datos y el sol en el arco.
-4. Buscador de ciudades con sugerencias y transición de cielo al cambiar de ciudad.
-5. Botón "Usar mi ubicación" dentro del buscador (no se pide permiso al entrar).
-6. URL compartible por ciudad.
-7. Alternar °C / °F.
-8. Responsive y accesible (teclado, lector de pantalla, reducir movimiento, contraste automático).
-9. Capa de servidor: obtención de datos, validación, caché y un endpoint propio de búsqueda.
-10. Tests unitarios + un test de punta a punta + CI + deploy en Vercel.
+### In v1
+1. The main screen from the design, with real data (Open-Meteo).
+2. Computed sky: gradient driven by the real sun altitude, cloud cover and rain.
+3. Interactive 24-hour ruler: moving it updates the sky, temperature, metrics and the sun on the arc.
+4. City search with suggestions, and a sky transition when switching cities.
+5. "Use my location" button inside the search (no permission prompt on page load).
+6. Shareable URL per city.
+7. °C / °F toggle.
+8. English and Spanish interface (English by default).
+9. Responsive and accessible (keyboard, screen readers, reduced motion, automatic contrast).
+10. Server layer: data fetching, validation, caching and our own search endpoint.
+11. Unit and component tests, one end-to-end test, CI, and deployment on Vercel.
 
-### Fuera de v1 (posibles mejoras)
-- El botón de "ajustes" del diseño (no se muestra en v1).
-- Pronóstico de 7 días, ciudades guardadas, versión en inglés.
-- Tipografía viva (letras que reaccionan al clima), lluvia animada, shader WebGL.
-- Nombre de ciudad para "Tu ubicación" (Open-Meteo no hace geocodificación inversa).
+### Out of v1 (possible follow-ups)
+- The "settings" button from the design (not rendered in v1).
+- 7-day forecast, saved cities, more languages.
+- Live typography (letters reacting to the weather), animated rain, WebGL shader.
+- A city name for "Your location" (Open-Meteo has no reverse geocoding).
 
-## 3. Stack y convenciones
+## 3. Stack
 
-| Pieza | Elección | Por qué |
+| Piece | Choice | Why |
 |---|---|---|
-| Framework | Next.js (App Router), última versión estable | Server Components para traer datos en el servidor; rutas y endpoints sin un back aparte |
-| Lenguaje | TypeScript en modo `strict` | Objetivo de aprendizaje; errores en tiempo de edición |
-| Estilos | Tailwind CSS | Rápido para maquetar; los colores dinámicos van por variables CSS |
-| Animación | Motion (ex Framer Motion) + CSS `@property` | Motion para entradas/salidas y números; CSS para el cielo |
-| Validación | Zod | Valida datos externos y genera los tipos |
-| Sol | `suncalc` | Altura del sol exacta; no reinventamos astronomía |
-| Color | `culori` | Mezcla de colores en OKLCH (degradés sin tonos "barrosos") y cálculo de contraste WCAG |
-| Tests | Vitest + Playwright | Unitarios para la lógica pura, un e2e para el flujo principal |
-| Deploy | Vercel + GitHub Actions | Preview por PR; CI con lint, tipos, tests y build |
+| Framework | Next.js 16 (App Router) | Server Components fetch data on the server; routes and endpoints without a separate backend |
+| Language | TypeScript, `strict` + `noUncheckedIndexedAccess` | Learning goal; catches errors while editing |
+| Styling | Tailwind CSS | Fast layout work; dynamic colors go through CSS variables |
+| Animation | Motion (formerly Framer Motion) + CSS `@property` | Motion for enter/exit and numbers; CSS for the sky |
+| Validation | Zod | Validates external data and generates the types |
+| Sun | `suncalc` | Exact sun altitude; no reinventing astronomy |
+| Color | `culori` | OKLCH color mixing (no "muddy" mid-gradient tones) and WCAG contrast |
+| i18n | Next's built-in `[lang]` segment + dictionaries | Few strings; no library needed |
+| Tests | Vitest + Testing Library + Playwright | Unit tests for pure logic, component tests for interactions, one e2e for the main flow |
+| Quality | ESLint + Prettier | Consistent style, enforced in CI |
+| Deploy | Vercel + GitHub Actions | Preview per PR; CI runs lint, types, tests and build |
 
-Convenciones:
-- Interfaz en **español**; código (variables, funciones, archivos) en **inglés**; documentación en español.
-- Commits en inglés con formato *conventional commits* (`feat:`, `fix:`, `docs:`…), sin firmas de herramientas.
-- Una rama por bloque de trabajo → PR → merge a `main`.
+Exact versions are pinned when the project is scaffolded.
 
-## 4. Arquitectura
+## 4. Architecture
 
 ```
-Servidor (Next)                                   Navegador
-────────────────                                  ─────────
-app/[place]/page.tsx  (Server Component)
- ├─ resuelve el lugar (id → nombre y coordenadas)
+Server (Next)                                      Browser
+─────────────                                      ───────
+app/[lang]/[place]/page.tsx  (Server Component)
+ ├─ resolves the place (id → name and coordinates)
  ├─ getForecast(lat, lon)  → Open-Meteo
- │    ├─ valida con Zod
- │    ├─ normaliza a nuestro tipo Forecast
- │    └─ caché 10 min
- └─ renderiza <Ventana forecast unit />  ───────►  <Ventana> (Client Component)
-                                                     estado: selectedTime
-                                                     derivado: punto horario, sol,
-                                                     paleta del cielo, colores de texto
-app/api/search/route.ts  ◄───────────────────────  <SearchOverlay> pide sugerencias
- └─ Open-Meteo Geocoding (validado, caché 1 día)
+ │    ├─ validates with Zod
+ │    ├─ normalizes into our Forecast type
+ │    └─ caches for 10 min
+ └─ renders <Ventana forecast unit dict />  ───────►  <Ventana> (Client Component)
+                                                       state: selectedTime
+                                                       derived: hour point, sun,
+                                                       sky palette, text colors
+app/api/search/route.ts  ◄─────────────────────────  <SearchOverlay> requests suggestions
+ └─ Open-Meteo Geocoding (validated, cached 1 day)
+proxy.ts: "/" → "/en" or "/es" (cookie, then Accept-Language)
 ```
 
-Principio: **los datos se traen en el servidor; la interacción vive en el cliente**. La única parte "con estado" es la hora elegida en la regla; todo lo demás se **deriva** de los datos + esa hora (no se duplica en más estados).
+Principle: **data is fetched on the server; interaction lives on the client**. The only piece of state is the time selected on the ruler; everything else is **derived** from the data plus that time (never duplicated into more state).
 
-### Rutas
+### Routes
 
-| URL | Qué muestra |
+| URL | Shows |
 |---|---|
-| `/` | Buenos Aires (id 3435910) |
-| `/{slug}-{id}` (ej. `/buenos-aires-3435910`) | La ciudad con ese id de Open-Meteo. El id evita ambigüedades (Córdoba AR vs. ES). Si el slug no coincide con el nombre real, redirige a la URL correcta |
-| `/?lat=-34.60&lon=-58.38` | "Tu ubicación" en esas coordenadas. Si lat/lon son inválidas (fuera de rango o no numéricas) → redirige a `/` |
-| `/api/search?q=texto` | JSON con hasta 5 ciudades. `q` de menos de 2 caracteres → lista vacía |
+| `/` | Redirects to `/en` or `/es` (see §6) |
+| `/{lang}` | Buenos Aires (id 3435910) |
+| `/{lang}/{slug}-{id}` (e.g. `/en/buenos-aires-3435910`) | The city with that Open-Meteo id. The id avoids ambiguity: "Buenos Aires" exists in Argentina and in Nicaragua. If the slug does not match the city's name in that language, redirect to the canonical URL (`/es/londres-2643743` ↔ `/en/london-2643743`) |
+| `/{lang}?lat=-34.60&lon=-58.38` | "Your location" at those coordinates. Invalid lat/lon (out of range or not numeric) → redirect to `/{lang}` |
+| `/api/search?q=text&lang=en` | JSON with up to 5 cities. `q` shorter than 2 characters → empty list |
 
-### Estructura de carpetas
+### Folder structure
 
 ```
 src/
+  proxy.ts                  locale redirect for "/"
   app/
-    layout.tsx            fuentes, <Sky> persistente, metadatos
-    page.tsx              ciudad por defecto o ?lat&lon
-    [place]/page.tsx      ciudad por id
-    api/search/route.ts   endpoint de búsqueda
-    not-found.tsx         ciudad inexistente
-    error.tsx             falla de la API, con "reintentar"
-  components/             Ventana, Sky, Header, SunArc, Temperature,
-                          Metrics, Timeline, SearchOverlay, Footer
+    [lang]/
+      layout.tsx            fonts, <html lang>, persistent <Sky>, metadata
+      page.tsx              default city or ?lat&lon
+      [place]/page.tsx      city by id
+      not-found.tsx         unknown city
+      error.tsx             API failure, with "Try again"
+    api/search/route.ts     search endpoint
+  components/               Ventana, Sky, Header, SunArc, Temperature,
+                            Metrics, Timeline, SearchOverlay, Footer
+  i18n/                     config, en.ts, es.ts, getDictionary
   lib/
-    weather/              fetch + esquemas Zod + tipos (solo servidor)
-    geocoding/            búsqueda y resolución por id (solo servidor)
-    sky/                  paletas, mezcla y contraste (puro)
-    time.ts, units.ts, weather-codes.ts   (puro)
+    weather/                fetch + Zod schemas + types (server only)
+    geocoding/              search and lookup by id (server only)
+    sky/                    palettes, mixing, contrast (pure)
+    time.ts, units.ts, weather-codes.ts, slug.ts   (pure)
 ```
 
-Los módulos de `lib/weather` y `lib/geocoding` importan `server-only`: si por error se usan en el navegador, el build falla.
+Modules in `lib/weather` and `lib/geocoding` import `server-only`: if one is accidentally used in the browser, the build fails.
 
-## 5. Datos
+## 5. Data
 
-### Fuente
-- Pronóstico: `https://api.open-meteo.com/v1/forecast` con `timezone=auto` y `timeformat=unixtime`.
-  - `current`: temperatura, sensación térmica, humedad, código de clima, nubosidad, viento (velocidad y dirección), presión al nivel del mar.
-  - `hourly`: lo mismo + probabilidad de precipitación, precipitación y visibilidad.
-  - Ventana horaria: **24 puntos**, desde 3 horas antes de la hora actual hasta 20 horas después.
-  - `daily`: salida y puesta del sol para los 2 días que toca la ventana.
-- Geocoding: `https://geocoding-api.open-meteo.com/v1/search?name=…&count=5&language=es` y `…/v1/get?id=…`.
+### Sources
+- Forecast: `https://api.open-meteo.com/v1/forecast` with `timezone=auto` and `timeformat=unixtime`.
+  - `current`: temperature, apparent temperature, humidity, weather code, cloud cover, wind (speed and direction), sea-level pressure.
+  - `hourly`: the same plus precipitation probability, precipitation and visibility.
+  - Hourly window: **24 points**, from 3 hours before the current hour to 20 hours after it.
+  - `daily`: sunrise and sunset for the 2 days the window spans.
+- Geocoding: `https://geocoding-api.open-meteo.com/v1/search?name=…&count=5&language={lang}` and `…/v1/get?id=…&language={lang}`.
 
-### Por qué UTC
-Las horas se piden en UTC (`unixtime`) y se muestran con `Intl.DateTimeFormat` en la zona horaria de la ciudad (`timezone` que devuelve la API). Así nunca se mezcla la hora de la persona que mira con la de la ciudad.
+### Why UTC
+Times are requested as UTC (`unixtime`) and displayed with `Intl.DateTimeFormat` in the city's time zone (the `timezone` returned by the API). The viewer's time zone never leaks into the city's time.
 
-### Tipos propios (resultado de normalizar)
+### Our own types (after normalization)
 
 ```ts
 type Place = {
-  id: number | null;          // null = "Tu ubicación"
-  name: string;               // "Buenos Aires" | "Tu ubicación"
+  id: number | null;          // null = "Your location"
+  name: string;               // "Buenos Aires" | "Your location"
   region?: string;            // "Ciudad Autónoma de Buenos Aires" (admin1)
   country?: string;           // "Argentina"
   latitude: number;
@@ -132,160 +137,201 @@ type Place = {
 };
 
 type HourPoint = {
-  time: number;               // unix (segundos, UTC)
+  time: number;               // unix seconds, UTC
   temperature: number;        // °C
   apparentTemperature: number;
   humidity: number;           // %
   precipitationProbability: number; // %
   precipitation: number;      // mm
-  weatherCode: number;        // código WMO
+  weatherCode: number;        // WMO code
   cloudCover: number;         // %
   windSpeed: number;          // km/h
-  windDirection: number;      // grados
+  windDirection: number;      // degrees
   pressure: number;           // hPa
-  visibility: number;         // metros
+  visibility: number;         // meters
 };
 
 type Forecast = {
   place: Place;
-  timezone: string;           // "America/Argentina/Buenos_Aires"
-  timezoneAbbreviation: string; // "ART" (si no viene, se usa el offset: "GMT-3")
-  current: HourPoint;         // si un campo no viene en `current`, se toma de la hora actual de `hourly`
-  hours: HourPoint[];         // 24 puntos
+  timezone: string;             // "America/Argentina/Buenos_Aires"
+  timezoneAbbreviation: string; // "ART" (falls back to the offset, e.g. "GMT-3")
+  current: HourPoint;           // fields missing from `current` are taken from the current hour in `hourly`
+  hours: HourPoint[];           // 24 points
   sun: { sunrise: number; sunset: number }[];
   fetchedAt: number;
 };
 ```
 
-### Validación y caché
-- Toda respuesta externa pasa por un esquema Zod antes de usarse. Si no cumple → error controlado (`error.tsx`), nunca `undefined` en pantalla.
-- Caché del servidor: pronóstico 10 minutos, geocoding 24 horas.
-- Los códigos WMO se traducen a texto en español con una tabla propia (`weather-codes.ts`), ej. `2 → "Parcialmente nublado"`.
+### Validation and caching
+- Every external response goes through a Zod schema before use. If it doesn't match → handled error (`error.tsx`), never `undefined` on screen.
+- Server cache: forecast 10 minutes, geocoding 24 hours.
+- WMO weather codes map to text through our own table (`weather-codes.ts`), one entry per language, e.g. `2 → "Partly cloudy" / "Parcialmente nublado"`.
 
-## 6. El cielo
+## 6. Internationalization
 
-### Paleta
-- `sunAltitude(date, lat, lon)` (con `suncalc`) devuelve la altura del sol en grados.
-- Paletas base por altura del sol, cada una con 3 colores (arriba / medio / abajo):
+- Locales: `en` (default) and `es`. The locale is the first URL segment (`/en/...`, `/es/...`): each language has its own shareable, indexable URL.
+- `proxy.ts` handles requests without a locale (`/`, `/buenos-aires-3435910`): it uses the `NEXT_LOCALE` cookie if present, otherwise the best match from the browser's `Accept-Language` header, otherwise `en`.
+- Dictionaries: one typed object per language (`en.ts`, `es.ts`). `es` must satisfy the type of `en`, so a missing translation is a compile error.
+- Dates, times and numbers are formatted with `Intl` using the active locale.
+- City names come from Open-Meteo in the active language (`language=` parameter).
+- Header language switch (`EN / ES`), styled like the °C/°F toggle: it links to the same page in the other language and stores the choice in the `NEXT_LOCALE` cookie.
+- `<html lang>` follows the locale, and each page declares its alternate-language URL (`hreflang`).
 
-| Altura del sol | Momento |
+## 7. The sky
+
+### Palette
+- `sunAltitude(date, lat, lon)` (via `suncalc`) returns the sun altitude in degrees.
+- Base palettes by sun altitude, each with 3 colors (top / middle / bottom):
+
+| Sun altitude | Moment |
 |---|---|
-| ≤ −18° | Noche |
-| −12° | Crepúsculo náutico |
-| −4° | Crepúsculo civil |
-| +4° | Hora dorada (la del diseño: índigo → malva → coral) |
-| ≥ +25° | Día |
+| ≤ −18° | Night |
+| −12° | Nautical twilight |
+| −4° | Civil twilight |
+| +4° | Golden hour (the one in the design: indigo → mauve → coral) |
+| ≥ +25° | Day |
 
-- Entre dos paletas se interpola en **OKLCH** según la altura exacta → el cielo cambia de forma continua, incluso entre horas.
-- Nubosidad (0–100 %): acerca los colores a un gris de la misma luminosidad (hasta 60 % de mezcla con nubosidad total).
-- Lluvia (precipitación > 0 o código de lluvia/tormenta): baja saturación y luminosidad un paso más.
-- Capas del diseño: degradé principal + bruma baja + nube difusa (su opacidad sube con la nubosidad) + grano fijo (SVG `feTurbulence`, opacidad baja).
+- Between two palettes, colors are interpolated in **OKLCH** using the exact altitude, so the sky changes continuously, even between hours.
+- Cloud cover (0–100 %) pulls the colors toward a gray of the same lightness (up to a 60 % mix at full cover).
+- Rain (precipitation > 0 or a rain/storm code) lowers saturation and lightness one step further.
+- Layers from the design: main gradient + low horizon haze + diffuse cloud (its opacity grows with cloud cover) + static film grain (SVG `feTurbulence`, low opacity).
 
-### Contraste automático
-- Los textos mantienen la posición del diseño; **su color se calcula según el fondo que tienen detrás**: header → color de arriba, centro → color del medio, regla y pie → color de abajo.
-- Para cada zona se elige tinta clara (blanco) o tinta oscura (índigo muy oscuro), la que dé mayor contraste.
-- Los textos secundarios usan la misma tinta con transparencia; la transparencia se ajusta para que el color resultante (mezclado con el fondo) cumpla **4.5:1** (texto chico) o **3:1** (texto ≥ 24 px). Esto corrige los textos del pie, que en el diseño tienen poco contraste.
+### Automatic contrast
+- Text keeps the position from the design; **its color is computed from the background right behind it**: header → top color, center → middle color, ruler and footer → bottom color.
+- Each zone picks a light ink (white) or a dark ink (very dark indigo), whichever gives the higher contrast.
+- Secondary text uses the same ink with transparency. The transparency is adjusted so the resulting color (blended with the background) meets **4.5:1** (small text) or **3:1** (text ≥ 24 px). This fixes the low-contrast footer text in the design.
 
-### Cómo se aplica
-- `<Sky>` vive en `layout.tsx`, así no se desmonta al cambiar de ciudad y la transición de color es continua.
-- `<Ventana>` escribe los colores como variables CSS (`--sky-top`, `--sky-mid`, `--sky-bottom`, `--ink-top`…) en el documento.
-- Las variables se registran con `@property` (tipo `<color>`), lo que permite que CSS las anime con `transition`.
+### How it is applied
+- `<Sky>` lives in the `[lang]` layout, so it is not unmounted when the city changes and the color transition stays continuous.
+- `<Ventana>` writes the colors as CSS variables (`--sky-top`, `--sky-mid`, `--sky-bottom`, `--ink-top`…) on the document.
+- The variables are registered with `@property` (type `<color>`), which lets CSS animate them with `transition`.
 
-## 7. Componentes y comportamiento
+## 8. Components and behavior
 
 ### Header
-- Izquierda: nombre de la ciudad (abre el buscador) · hora local real (se actualiza cada minuto) + abreviatura de zona.
-- Derecha: indicador de estado · °C/°F · botón de búsqueda · marca "VENTANA". El botón de ajustes no va en v1.
-- Indicador de estado: "EN VIVO" cuando la regla está en el momento actual; "PRONÓSTICO" si está en el futuro y "MÁS TEMPRANO" si está en el pasado. Clic en el indicador → vuelve al momento actual.
+- Left: city name (opens the search) · real local time (updates every minute) + time-zone abbreviation.
+- Right: status indicator · °C/°F · EN/ES · search button · "VENTANA" brand. The settings button is not in v1.
+- Status indicator: "LIVE" when the ruler is at the current moment; "FORECAST" when it is in the future, "EARLIER" when it is in the past. Clicking it returns to the current moment.
 
-### Arco del sol
-- Muestra el día local que contiene el momento elegido: alba y ocaso con sus horas.
-- El punto del sol se ubica según la fracción del día transcurrida; de noche no se muestra.
+### Sun arc
+- Shows the local day containing the selected moment: sunrise and sunset with their times.
+- The sun dot is placed by the fraction of daylight elapsed; it is hidden at night.
 
-### Temperatura y datos
-- Número monumental: temperatura del momento elegido (actual si es "EN VIVO"; si no, la de la hora más cercana). Al cambiar, el número transiciona con Motion.
-- Debajo: condición (código WMO → texto) y sensación térmica.
-- Fila de datos: viento (km/h + punto cardinal), humedad, probabilidad de precipitación, presión.
-- °C/°F: cambia solo las temperaturas (el viento sigue en km/h). La preferencia se guarda en una **cookie** que lee el servidor, para que la página llegue ya con la unidad correcta (sin parpadeo).
+### Temperature and metrics
+- Monumental number: temperature at the selected moment (current values when "LIVE"; otherwise the nearest hour). When it changes, the number transitions with Motion.
+- Below it: condition (WMO code → text) and apparent temperature ("Feels like").
+- Metrics row: wind (km/h + compass direction), humidity, precipitation probability, pressure.
+- °C/°F changes temperatures only (wind stays in km/h). The preference is stored in a **cookie** the server reads, so the page arrives with the right unit (no flash).
 
-### Regla de 24 horas
-- Por debajo hay un `<input type="range">` nativo (invisible), con el diseño de la regla dibujado encima. Así el teclado (flechas, Inicio/Fin) y los lectores de pantalla funcionan sin código extra. `aria-valuetext` anuncia la hora y la temperatura, ej. "23:00, 12 grados".
-- Valor continuo (minutos), desde el primer hasta el último punto de la ventana. Se mueve:
-  - arrastrando la regla;
-  - con la rueda del mouse o el trackpad en cualquier parte de la pantalla (no hay scroll de página: es una vista única);
-  - con el teclado.
-- Etiquetas: temperatura arriba y hora abajo en cada hora; en mobile (< 768 px) las etiquetas se muestran cada 3 horas y las marcas, todas.
+### 24-hour ruler
+- Underneath it is a native `<input type="range">` (invisible) with the ruler design drawn on top. Keyboard (arrows, Home/End) and screen readers work with no extra code. `aria-valuetext` announces time and temperature, e.g. "11 PM, 12 degrees".
+- Continuous value (minutes), from the first to the last point in the window. It moves by:
+  - dragging the ruler;
+  - the mouse wheel or trackpad anywhere on the screen (there is no page scroll: it is a single view);
+  - the keyboard.
+- Labels: temperature above and hour below each hour mark; on mobile (< 768 px) labels show every 3 hours, ticks for every hour.
+- The right-hand label of the ruler header shows the country (the design's "RÍO DE LA PLATA" slot); hidden for "Your location".
 
-### Buscador
-- Se abre con el nombre de la ciudad, el botón de lupa o la tecla `/`. Se cierra con `Esc` o tocando afuera.
-- El cielo se desenfoca y oscurece; el input grande va flotando sobre el cielo (sin caja de modal), como en el diseño.
-- Sugerencias: espera 300 ms después de la última tecla, mínimo 2 caracteres, hasta 5 resultados ("Ciudad, Provincia, País"; ej. Buenos Aires aparece en Argentina y en Nicaragua). Patrón ARIA *combobox*: flechas para moverse, Enter para elegir.
-- Elegir una ciudad → navega a `/{slug}-{id}`.
-- "Usar mi ubicación": pide permiso al navegador → navega a `/?lat&lon`. Si se niega o falla, muestra el motivo dentro del buscador.
+### Search
+- Opens from the city name, the search button or the `/` key. Closes with `Esc` or by clicking outside.
+- The sky blurs and dims; the large input floats over the sky (no modal box), as in the design.
+- Suggestions: 300 ms after the last keystroke, minimum 2 characters, up to 5 results ("City, Region, Country"). ARIA *combobox* pattern: arrows to move, Enter to pick.
+- Picking a city → navigates to `/{lang}/{slug}-{id}`.
+- "Use my location": asks the browser for permission → navigates to `/{lang}?lat&lon`. If denied or unavailable, the reason is shown inside the search.
 
-### Pie
-- Mismas posiciones que el diseño: hora de la última actualización · lugar y coordenadas · visibilidad.
+### Footer
+- Same positions as the design: last update time · place and coordinates · visibility.
 
-## 8. Animación y movimiento
+## 9. Animation and motion
 
-| Qué | Cómo | Duración aprox. |
+| What | How | Approx. duration |
 |---|---|---|
-| Cielo (cambio de hora o de ciudad) | `transition` de variables `@property` | 600 ms |
-| Número de temperatura | Motion (salida/entrada vertical) | 300 ms |
-| Buscador abrir/cerrar | Motion `AnimatePresence` + desenfoque del fondo | 250 ms |
-| Arrastre de la regla | Sin transición (sigue al puntero en tiempo real) | — |
+| Sky (time or city change) | `transition` on `@property` variables | 600 ms |
+| Temperature number | Motion (vertical exit/enter) | 300 ms |
+| Search open/close | Motion `AnimatePresence` + background blur | 250 ms |
+| Dragging the ruler | No transition (follows the pointer in real time) | — |
 
-Con "reducir movimiento" activado en el sistema (`prefers-reduced-motion`), las transiciones pasan a cambios inmediatos (`MotionConfig reducedMotion="user"` + media query en CSS).
+With the system's "reduce motion" setting on (`prefers-reduced-motion`), transitions become instant (`MotionConfig reducedMotion="user"` + a CSS media query).
 
-## 9. Errores
+## 10. Errors
 
-| Situación | Qué ve la persona |
+| Situation | What the person sees |
 |---|---|
-| Id de ciudad inexistente | `not-found.tsx` con el mismo estilo + buscador |
-| Open-Meteo caído o respuesta inválida | `error.tsx`: mensaje claro + botón "Reintentar" |
-| Búsqueda sin resultados | "No encontramos esa ciudad" en el buscador |
-| Falla del endpoint de búsqueda | "No pudimos buscar ahora" en el buscador (sin romper la pantalla) |
-| Permiso de ubicación denegado o no disponible | Mensaje dentro del buscador; la ciudad actual sigue igual |
-| `lat`/`lon` inválidas en la URL | Redirige a `/` |
+| Unknown city id | `not-found.tsx` in the same style, with the search |
+| Open-Meteo down or invalid response | `error.tsx`: clear message + "Try again" button |
+| Search with no results | "We couldn't find that city" inside the search |
+| Search endpoint failure | "Search is unavailable right now" inside the search (the screen keeps working) |
+| Location permission denied or unavailable | Message inside the search; the current city stays |
+| Invalid `lat`/`lon` in the URL | Redirect to `/{lang}` |
+| Unsupported locale in the URL (`/fr/...`) | 404 |
 
-## 10. Tipografía y colores del diseño
+## 11. Typography and design colors
 
-- Display (ciudad, marca, número): serif de alto contraste; datos: sans geométrica. Los nombres exactos, tamaños y colores se toman de Figma (`get_design_context` sobre `1:274`) al empezar la maqueta y se cargan con `next/font`. Si alguna fuente no está en Google Fonts, se elige la alternativa más cercana y se consulta.
-- La paleta "hora dorada" (§6) se calibra con los colores del degradé del diseño.
+- Display (city, brand, number): high-contrast serif; data: geometric sans. Exact families, sizes and colors are taken from Figma (`get_design_context` on `1:274`) when layout work starts, and loaded with `next/font`. If a font is not on Google Fonts, the closest alternative is chosen and confirmed with the designer.
+- The "golden hour" palette (§7) is calibrated against the design's gradient colors.
+- The design's Spanish copy is translated for `en`.
 
-## 11. Calidad
+## 12. Quality
 
-### Tests unitarios (Vitest)
-- Paletas: interpolación entre momentos, efecto de nubes y lluvia.
-- Contraste: la tinta elegida y la transparencia cumplen los mínimos.
-- Tiempo: formato en la zona horaria de la ciudad, punto horario más cercano, ventana de 24 h.
-- Unidades (°C → °F), punto cardinal del viento, tabla de códigos WMO.
-- Normalización: respuesta de Open-Meteo (fixture JSON) → `Forecast`; respuesta inválida → error.
-- Slug: `/{slug}-{id}` se arma y se interpreta bien (acentos, espacios).
+### Code standards
+- TypeScript `strict` and `noUncheckedIndexedAccess`; no `any`.
+- Pure logic (`lib/sky`, `time`, `units`, `slug`, `weather-codes`) has no React or network dependencies, so it is easy to test.
+- Naming: components in `PascalCase.tsx`, other modules in `kebab-case.ts`, functions and variables in `camelCase`, types in `PascalCase`, booleans with `is`/`has`. Tests live next to their source as `*.test.ts(x)`.
+- ESLint (Next + TypeScript rules) and Prettier; both run in CI.
+- Pure logic is built test-first.
 
-### Test de punta a punta (Playwright)
-- Entra a `/`, ve una temperatura, mueve la regla con el teclado y el estado pasa a "PRONÓSTICO", busca "Córdoba", elige un resultado y la URL cambia.
-- Usa la API real (es un smoke test: verifica estructura, no valores).
+### Unit tests (Vitest)
+- Palettes: interpolation between moments, effect of clouds and rain.
+- Contrast: the chosen ink and transparency meet the minimums.
+- Time: formatting in the city's time zone, nearest hour point, 24-hour window.
+- Units (°C → °F), wind compass direction, WMO code table (both languages).
+- Normalization: Open-Meteo response (JSON fixture) → `Forecast`; invalid response → error.
+- Slug: `{slug}-{id}` builds and parses correctly (accents, spaces).
+- Locale detection from `Accept-Language` and the cookie.
 
-### CI y deploy
-- GitHub Actions en cada PR: lint, chequeo de tipos, tests unitarios, build y e2e.
-- Vercel conectado al repo: preview por PR y producción desde `main`. La conexión inicial requiere iniciar sesión en Vercel con la cuenta del proyecto (paso manual).
+### Component tests (Testing Library)
+- Ruler: keyboard moves the value, `aria-valuetext` is correct, the status changes to "FORECAST".
+- Search: debounced suggestions, arrow navigation, Enter navigates, error messages.
 
-## 12. Forma de trabajo
+### End-to-end test (Playwright)
+- Opens `/`, gets redirected to a locale, sees a temperature, moves the ruler with the keyboard and the status changes to "FORECAST", searches for "Córdoba", picks a result and the URL changes, switches to ES and the copy changes.
+- Uses the real API (smoke test: checks structure, not values).
 
-- Claude escribe el código. Al cerrar cada bloque: explicación de los puntos clave (con notas "en JS esto sería…" para TypeScript y notas de back cuando aparece código de servidor) + mini cuestionario multiple choice sobre lógica, arquitectura y funciones clave.
-- Cada bloque = una rama + PR. Cada merge a `main` se avisa.
-- El plan de implementación (bloques y orden) se escribe aparte, después de aprobar esta especificación.
+### CI and deployment
+- GitHub Actions on every PR: lint, type check, unit and component tests, build and e2e.
+- Vercel connected to the repo: preview per PR and production from `main`. The initial connection needs a manual Vercel login with the project owner's account.
 
-## 13. Decisiones registradas
+## 13. Workflow
 
-| Decisión | Alternativa descartada | Motivo |
+### Branches
+- `main` always works and is deployable. Nothing is developed directly on it.
+- One branch per work block, named `<type>/<short-kebab-description>`, e.g. `feat/sky-palette`, `chore/project-setup`, `docs/readme`.
+- Types (Conventional Commits): `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`, `build`, `perf`.
+
+### Review and commits
+1. Claude implements the block and leaves **all changes staged**, without committing.
+2. The owner reviews with `git diff --staged` and approves (or asks for changes).
+3. Claude proposes the atomic commits (message + files for each) and **waits for approval before committing**.
+4. Commits follow [Conventional Commits](https://www.conventionalcommits.org/): English, imperative, ≤ 72-character subject, e.g. `feat(sky): interpolate palettes in OKLCH by sun altitude`. Each commit is one logical change and leaves the project working. No tool attribution in messages.
+5. Push → Pull Request with a description (what, why, how to test) → CI green.
+6. Merge to `main` with a merge commit (keeps the atomic commits in history), only after the owner's OK; every merge is announced.
+
+### Learning
+- At the end of each block: an explanation of the key points (TypeScript notes comparing with plain JavaScript, server-side notes whenever backend code appears) and a short multiple-choice quiz on logic, architecture and key functions. Chat is in Spanish; code and docs in English.
+- The implementation plan (blocks and order) is written separately, after this spec is approved.
+
+## 14. Decision log
+
+| Decision | Rejected alternative | Reason |
 |---|---|---|
-| Cielo con degradés CSS | Shader WebGL | Más liviano y explicable; alcanza para el diseño |
-| Datos en el servidor | Fetch desde el navegador | Pantalla completa sin "cargando…", caché compartida, validación central |
-| Endpoint propio de búsqueda | Llamar a Open-Meteo desde el navegador | Normalizar/validar en un lugar y aprender cómo se arma un endpoint |
-| `input range` nativo bajo la regla | Slider 100 % custom | Accesibilidad y teclado sin reinventar |
-| Ubicación por botón | Pedir permiso al entrar | Mejor UX: el permiso se pide con contexto |
-| URL `/{slug}-{id}` | Solo nombre | Evita ciudades homónimas |
-| Unidad en cookie | `localStorage` | El servidor la conoce: sin parpadeo ni desajustes de hidratación |
-| Open-Meteo | OpenWeather | Gratis, sin API key, datos horarios y de sol en un solo pedido |
+| Sky with CSS gradients | WebGL shader | Lighter and easier to explain; enough for the design |
+| Data fetched on the server | Fetching from the browser | Complete screen with no loading state, shared cache, validation in one place |
+| Own search endpoint | Calling Open-Meteo from the browser | Normalize and validate in one place; learn how an endpoint is built |
+| Native `input range` under the ruler | Fully custom slider | Accessibility and keyboard support without reinventing them |
+| Location via a button | Prompting on page load | Better UX: permission is requested with context |
+| `{slug}-{id}` URLs | Name only | Avoids same-name cities |
+| Unit in a cookie | `localStorage` | The server knows it: no flash, no hydration mismatch |
+| Locale in the URL path | Cookie only | Each language gets its own shareable, indexable URL |
+| Built-in i18n | `next-intl` | Few strings; typed dictionaries are enough |
+| Open-Meteo | OpenWeather | Free, no API key, hourly and sun data in one request |
+| Merge commits to `main` | Squash merge | Keeps the atomic commits |
