@@ -41,7 +41,10 @@ export function sunTimesFor(sun: SunTimes[], unix: number): SunTimes | null {
 }
 
 export function daylightFraction(unix: number, sun: SunTimes): number | null {
-  if (unix < sun.sunrise || unix > sun.sunset) return null;
+  // Polar night: Open-Meteo returns sunrise === sunset (local midnight).
+  if (sun.sunset <= sun.sunrise || unix < sun.sunrise || unix > sun.sunset) {
+    return null;
+  }
   return (unix - sun.sunrise) / (sun.sunset - sun.sunrise);
 }
 

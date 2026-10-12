@@ -59,6 +59,16 @@ test("daylightFraction is 0 at sunrise, 0.5 mid-day and null after sunset", () =
   expect(daylightFraction(sunset + 1, secondDay)).toBeNull();
 });
 
+test("daylightFraction is null during polar night", () => {
+  // Open-Meteo returns sunrise === sunset === local midnight when the sun never rises.
+  const polarNight = {
+    day: 1766185200,
+    sunrise: 1766185200,
+    sunset: 1766185200,
+  };
+  expect(daylightFraction(polarNight.day, polarNight)).toBeNull();
+});
+
 test("timelineStatus is live within 15 minutes of now", () => {
   expect(timelineStatus(1000, 1000 + 900)).toBe("live");
   expect(timelineStatus(1000 + 901, 1000)).toBe("forecast");
