@@ -35,6 +35,7 @@ export const en = {
   search: {
     open: "Search city",
     placeholder: "Search city…",
+    searching: "Searching…",
     close: "Close search",
     useMyLocation: "Use my location",
     noResults: "We couldn't find that city",

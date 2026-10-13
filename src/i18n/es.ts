@@ -33,6 +33,7 @@ export const es: Dictionary = {
   search: {
     open: "Buscar ciudad",
     placeholder: "Buscar ciudad…",
+    searching: "Buscando…",
     close: "Cerrar búsqueda",
     useMyLocation: "Usar mi ubicación",
     noResults: "No encontramos esa ciudad",

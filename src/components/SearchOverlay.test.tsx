@@ -120,6 +120,23 @@ describe("SearchOverlay", () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  it("shows a spinner from typing until the results arrive", async () => {
+    const calls = stubFetch();
+    const { type } = setup();
+
+    type("c");
+    expect(screen.queryByText("Searching…")).toBeNull();
+
+    type("cord");
+    expect(screen.getByText("Searching…")).toBeInTheDocument();
+    await wait(300);
+    expect(screen.getByText("Searching…")).toBeInTheDocument();
+
+    await calls[0]?.respond({ results: [cordoba] });
+    expect(screen.queryByText("Searching…")).toBeNull();
+    expect(screen.getByRole("option", { name: /Córdoba/ })).toBeInTheDocument();
+  });
+
   it("says when nothing matches and when search is down", async () => {
     const calls = stubFetch();
     const { type } = setup();
