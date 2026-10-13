@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/en";
 import { setPreferenceCookie } from "@/lib/cookies";
+import { useWheelScrub } from "@/lib/hooks/use-wheel-scrub";
 import { deriveScene } from "@/lib/scene";
 import { themeToCss } from "@/lib/sky/theme";
 import { UNIT_COOKIE, type TemperatureUnit } from "@/lib/units";
@@ -15,6 +16,7 @@ import { Metrics } from "./Metrics";
 import { SearchOverlay } from "./SearchOverlay";
 import { SunArc } from "./SunArc";
 import { Temperature } from "./Temperature";
+import { Timeline } from "./Timeline";
 
 type WeatherAppProps = {
   forecast: Forecast;
@@ -22,9 +24,6 @@ type WeatherAppProps = {
   locale: Locale;
   dict: Dictionary;
 };
-
-// shortcut: the selected time is always now until the ruler (Block 7) exists
-const noop = () => {};
 
 export function WeatherApp({
   forecast,
@@ -34,7 +33,16 @@ export function WeatherApp({
 }: WeatherAppProps) {
   const [unit, setUnit] = useState(initialUnit);
   const [searchOpen, setSearchOpen] = useState(false);
-  const scene = deriveScene(forecast, forecast.current.time);
+  const [selected, setSelected] = useState(forecast.current.time);
+  const scene = deriveScene(forecast, selected);
+  const first = forecast.hours[0]?.time ?? selected;
+  const last = forecast.hours.at(-1)?.time ?? selected;
+
+  useWheelScrub({
+    enabled: !searchOpen,
+    onDelta: (seconds) =>
+      setSelected((time) => Math.min(Math.max(time + seconds, first), last)),
+  });
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -72,7 +80,7 @@ export function WeatherApp({
           locale={locale}
           dict={dict}
           onOpenSearch={() => setSearchOpen(true)}
-          onBackToLive={noop}
+          onBackToLive={() => setSelected(forecast.current.time)}
         />
         <main className="flex flex-1 flex-col items-center justify-center gap-6 py-4 text-(--ink-mid)">
           <SunArc
@@ -91,6 +99,17 @@ export function WeatherApp({
           />
           <Metrics point={scene.point} dict={dict} />
         </main>
+        <Timeline
+          hours={forecast.hours}
+          value={selected}
+          onChange={setSelected}
+          timeZone={forecast.timezone}
+          locale={locale}
+          unit={unit}
+          dict={dict}
+          now={forecast.current.time}
+          country={forecast.place.country}
+        />
         <Footer forecast={forecast} locale={locale} dict={dict} />
       </div>
       <SearchOverlay
