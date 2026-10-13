@@ -1,7 +1,7 @@
 "use client";
 
 import { MotionConfig } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/en";
 import { setPreferenceCookie } from "@/lib/cookies";
@@ -12,6 +12,7 @@ import type { Forecast } from "@/lib/weather/types";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
 import { Metrics } from "./Metrics";
+import { SearchOverlay } from "./SearchOverlay";
 import { SunArc } from "./SunArc";
 import { Temperature } from "./Temperature";
 
@@ -22,7 +23,7 @@ type WeatherAppProps = {
   dict: Dictionary;
 };
 
-// shortcut: the selected time is always now and search does nothing until the ruler (Block 7) and search (Block 8) exist
+// shortcut: the selected time is always now until the ruler (Block 7) exists
 const noop = () => {};
 
 export function WeatherApp({
@@ -32,7 +33,25 @@ export function WeatherApp({
   dict,
 }: WeatherAppProps) {
   const [unit, setUnit] = useState(initialUnit);
+  const [searchOpen, setSearchOpen] = useState(false);
   const scene = deriveScene(forecast, forecast.current.time);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      // "/" opens search, unless the person is typing in a field.
+      const target = event.target;
+      if (event.key !== "/") return;
+      if (
+        target instanceof Element &&
+        target.closest("input, textarea, [contenteditable]")
+      )
+        return;
+      event.preventDefault();
+      setSearchOpen(true);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   function changeUnit(next: TemperatureUnit) {
     setUnit(next);
@@ -52,7 +71,7 @@ export function WeatherApp({
           onUnitChange={changeUnit}
           locale={locale}
           dict={dict}
-          onOpenSearch={noop}
+          onOpenSearch={() => setSearchOpen(true)}
           onBackToLive={noop}
         />
         <main className="flex flex-1 flex-col items-center justify-center gap-6 py-4 text-(--ink-mid)">
@@ -74,6 +93,12 @@ export function WeatherApp({
         </main>
         <Footer forecast={forecast} locale={locale} dict={dict} />
       </div>
+      <SearchOverlay
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        locale={locale}
+        dict={dict}
+      />
     </MotionConfig>
   );
 }
