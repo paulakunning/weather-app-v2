@@ -27,6 +27,7 @@ export const es: Dictionary = {
   },
   footer: {
     updated: "Actualización",
+    data: "Datos",
   },
   degrees: "grados",
   yourLocation: "Tu ubicación",

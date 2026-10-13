@@ -39,6 +39,12 @@ describe("WeatherApp search", () => {
     fireEvent.keyDown(document.body, { key: "/" });
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
+
+  it("opens with the / key while the ruler has focus", () => {
+    renderApp();
+    fireEvent.keyDown(screen.getByRole("slider"), { key: "/" });
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
 });
 
 describe("WeatherApp timeline", () => {

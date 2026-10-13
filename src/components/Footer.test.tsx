@@ -36,3 +36,14 @@ it("rounds visibility from 10 km and shows a dash when it is missing", () => {
   );
   expect(screen.getByText("Visibility —")).toBeInTheDocument();
 });
+
+it("credits Open-Meteo, the source of the data", () => {
+  render(
+    <Footer forecast={forecastWithVisibility(10000)} locale="es" dict={es} />,
+  );
+  expect(screen.getByRole("link", { name: "Open-Meteo" })).toHaveAttribute(
+    "href",
+    "https://open-meteo.com/",
+  );
+  expect(screen.getByText(/Datos:/)).toBeInTheDocument();
+});
