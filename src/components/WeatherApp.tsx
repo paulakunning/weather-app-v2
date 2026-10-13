@@ -70,7 +70,7 @@ export function WeatherApp({
     <MotionConfig reducedMotion="user">
       {/* Later in the document than the layout's default sky, so it wins. */}
       <style>{themeToCss(scene.theme)}</style>
-      <div className="mx-auto flex min-h-dvh max-w-[1720px] flex-col px-4 pt-7 pb-6 md:px-16">
+      <div className="mx-auto flex min-h-dvh max-w-[1720px] flex-col px-4 pt-4 pb-3 md:px-16 md:pt-7 md:pb-6">
         <Header
           place={forecast.place}
           forecast={forecast}
@@ -82,7 +82,7 @@ export function WeatherApp({
           onOpenSearch={() => setSearchOpen(true)}
           onBackToLive={() => setSelected(forecast.current.time)}
         />
-        <main className="flex flex-1 flex-col items-center justify-center gap-6 py-4 text-(--ink-mid)">
+        <main className="flex flex-1 flex-col items-center justify-center gap-3 py-2 text-(--ink-mid) md:gap-6 md:py-4">
           <SunArc
             sun={scene.sun}
             daylight={scene.daylight}

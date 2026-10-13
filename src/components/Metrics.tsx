@@ -31,7 +31,7 @@ export function Metrics({
   ];
 
   return (
-    <ul className="flex w-full max-w-[672px] flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-(--ink-mid)/15 px-4 pt-7 md:justify-between">
+    <ul className="flex w-full max-w-[672px] flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-(--ink-mid)/15 px-4 pt-4 md:justify-between md:pt-7">
       {metrics.map(({ label, value, suffix }, i) => (
         <Fragment key={label}>
           {i > 0 && (

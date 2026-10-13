@@ -79,7 +79,7 @@ export function Header({
   const isLive = status === "live";
 
   return (
-    <header className="flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-(--ink-top) md:justify-between">
+    <header className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3 text-(--ink-top) md:justify-between md:gap-x-7">
       <div className="flex items-center gap-4">
         <h1>
           <button
@@ -106,7 +106,7 @@ export function Header({
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-3">
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3 md:gap-x-7">
         <button
           type="button"
           disabled={isLive}
@@ -177,7 +177,7 @@ export function Header({
         >
           <Icon src="/icons/search-icon.svg" width={13.65} height={13.65} />
         </button>
-        <p className="font-display border-(--ink-top)/20 text-[28px]/[34px] tracking-[-0.7px] md:border-l md:pl-[9px]">
+        <p className="font-display border-(--ink-top)/20 text-[28px]/[34px] tracking-[-0.7px] max-md:hidden md:border-l md:pl-[9px]">
           {dict.brand}
         </p>
       </div>

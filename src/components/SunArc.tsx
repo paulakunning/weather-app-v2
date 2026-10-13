@@ -41,8 +41,9 @@ export function SunArc({ sun, daylight, timeZone, locale, dict }: SunArcProps) {
   const start = arcPoint(0);
   const sunAt = daylight === null ? null : arcPoint(daylight);
 
+  // On very short screens (iPhone SE with browser bars) the arc gives way so the ruler stays visible.
   return (
-    <div className="relative h-28 w-full max-w-[896px]">
+    <div className="relative mb-3 h-20 w-full max-w-[896px] md:mb-0 md:h-28 [@media(max-height:600px)]:hidden">
       <Layer
         src="/sun-arc/horizon-dashed.svg"
         style={{

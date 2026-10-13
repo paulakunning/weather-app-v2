@@ -22,7 +22,7 @@ export function Footer({ forecast, locale, dict }: FooterProps) {
     forecast;
 
   return (
-    <footer className="flex flex-col items-center gap-x-6 gap-y-1 px-2 pt-1 text-[10px]/[15px] text-(--ink-bottom-2) md:flex-row md:justify-between">
+    <footer className="flex flex-col items-center gap-x-6 gap-y-0.5 px-2 pt-1 text-[10px]/[15px] text-(--ink-bottom-2) md:flex-row md:justify-between">
       <p className="tracking-[0.5px]">
         {dict.footer.updated} {formatTime(fetchedAt, timezone, locale)}{" "}
         {timezoneAbbreviation} · {dict.footer.data}:{" "}
