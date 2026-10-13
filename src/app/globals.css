@@ -4,3 +4,77 @@
   --font-display: var(--font-bodoni);
   --font-sans: var(--font-manrope);
 }
+
+@property --sky-top {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --sky-mid {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --sky-bottom {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --ink-top {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --ink-top-2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --ink-mid {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --ink-mid-2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --ink-bottom {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --ink-bottom-2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --cloud-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+/* Registered properties can be animated, so the sky and inks fade between scenes. */
+:root {
+  transition-property:
+    --sky-top, --sky-mid, --sky-bottom, --ink-top, --ink-top-2, --ink-mid,
+    --ink-mid-2, --ink-bottom, --ink-bottom-2, --cloud-opacity;
+  transition-duration: 600ms;
+  transition-timing-function: ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    transition: none;
+  }
+}

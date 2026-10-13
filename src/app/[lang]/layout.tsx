@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bodoni_Moda, Manrope } from "next/font/google";
 import { notFound } from "next/navigation";
+import { Sky } from "@/components/Sky";
 import { isLocale, locales } from "@/i18n/config";
 import { skyTheme, themeToCss } from "@/lib/sky/theme";
 import "../globals.css";
@@ -39,7 +40,8 @@ export default async function RootLayout({
       <head>
         <style>{DEFAULT_SKY}</style>
       </head>
-      <body className="min-h-dvh bg-linear-to-b from-(--sky-top) via-(--sky-mid) to-(--sky-bottom) text-(--ink-mid)">
+      <body className="min-h-dvh text-(--ink-mid)">
+        <Sky />
         {children}
       </body>
     </html>
