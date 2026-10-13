@@ -14,6 +14,7 @@ test("themeToCss writes every CSS variable", () => {
     "--ink-bottom",
     "--ink-bottom-2",
     "--cloud-opacity",
+    "--rain-opacity",
   ];
   for (const name of names) expect(css).toContain(`${name}:`);
   expect(css).not.toContain("undefined");
@@ -24,4 +25,9 @@ test("cloud opacity grows from 0.15 to 0.65 with cloud cover", () => {
   expect(skyTheme(10, 0, false).cloudOpacity).toBeCloseTo(0.15);
   expect(skyTheme(10, 50, false).cloudOpacity).toBeCloseTo(0.4);
   expect(skyTheme(10, 100, false).cloudOpacity).toBeCloseTo(0.65);
+});
+
+test("rain opacity is 0 unless given", () => {
+  expect(skyTheme(10, 50, false).rainOpacity).toBe(0);
+  expect(skyTheme(10, 50, true, 0.5).rainOpacity).toBe(0.5);
 });

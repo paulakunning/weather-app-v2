@@ -53,3 +53,22 @@ describe("deriveScene", () => {
     expect(noon).not.toBe(night);
   });
 });
+
+describe("rain", () => {
+  function rainAt(weatherCode: number, precipitation: number) {
+    const current = { ...forecast.current, weatherCode, precipitation };
+    return deriveScene({ ...forecast, current }, current.time).theme
+      .rainOpacity;
+  }
+
+  it("is hidden when the code is not rain, even with snow on the ground", () => {
+    expect(rainAt(3, 0)).toBe(0);
+    expect(rainAt(73, 2)).toBe(0);
+  });
+
+  it("is faint for drizzle and grows with millimeters, up to a cap", () => {
+    expect(rainAt(51, 0.2)).toBeCloseTo(0.33);
+    expect(rainAt(63, 2)).toBeCloseTo(0.6);
+    expect(rainAt(65, 10)).toBe(0.8);
+  });
+});
