@@ -46,7 +46,7 @@ export function WeatherApp({
       <div className="mx-auto flex min-h-dvh max-w-[1720px] flex-col px-4 pt-7 pb-6 md:px-16">
         <Header
           place={forecast.place}
-          forecast={forecast} 
+          forecast={forecast}
           status={scene.status}
           unit={unit}
           onUnitChange={changeUnit}
