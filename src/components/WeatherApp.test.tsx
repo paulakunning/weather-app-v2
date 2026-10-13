@@ -1,6 +1,7 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { en } from "@/i18n/en";
+import { formatTime } from "@/lib/time";
 import fixture from "@/lib/weather/__fixtures__/buenos-aires.json";
 import { normalizeForecast } from "@/lib/weather/normalize";
 import { forecastResponseSchema } from "@/lib/weather/schema";
@@ -13,6 +14,16 @@ const forecast = normalizeForecast(forecastResponseSchema.parse(fixture), {
   name: "Buenos Aires",
   latitude: -34.61315,
   longitude: -58.37723,
+});
+
+// The device clock starts at the forecast's "now"; tests move it when they need to.
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
+  vi.setSystemTime(forecast.current.time * 1000);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 function renderApp() {
@@ -55,5 +66,29 @@ describe("WeatherApp timeline", () => {
 
     fireEvent.click(status);
     expect(screen.getByRole("button", { name: "LIVE" })).toBeDisabled();
+  });
+});
+
+describe("WeatherApp clock and scrubbing", () => {
+  it("shows the device's time as now and keeps the live needle there", async () => {
+    const later = forecast.current.time + 20 * 60;
+    vi.setSystemTime(later * 1000);
+    renderApp();
+    await act(async () => vi.advanceTimersByTime(0));
+
+    expect(
+      screen.getByText(`now ${formatTime(later, forecast.timezone, "en")}`),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("slider")).toHaveValue(String(later));
+    expect(screen.getByRole("button", { name: "LIVE" })).toBeDisabled();
+  });
+
+  it("turns the sky fade off while the ruler moves", async () => {
+    renderApp();
+    fireEvent.keyDown(screen.getByRole("slider"), { key: "ArrowRight" });
+    expect(document.documentElement).toHaveAttribute("data-scrubbing");
+
+    await act(async () => vi.advanceTimersByTime(300));
+    expect(document.documentElement).not.toHaveAttribute("data-scrubbing");
   });
 });

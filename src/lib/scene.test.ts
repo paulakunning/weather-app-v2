@@ -25,6 +25,15 @@ describe("deriveScene", () => {
     expect(scene.point).toBe(forecast.current);
   });
 
+  it("measures LIVE against the given now", () => {
+    const later = forecast.current.time + 1800;
+    expect(deriveScene(forecast, later).status).toBe("forecast");
+
+    const scene = deriveScene(forecast, later, later);
+    expect(scene.status).toBe("live");
+    expect(scene.point).toBe(forecast.current);
+  });
+
   it("uses the nearest hour in the future", () => {
     const scene = deriveScene(forecast, hour(10).time);
     expect(scene.status).toBe("forecast");

@@ -93,6 +93,12 @@
   transition-timing-function: ease;
 }
 
+/* While the ruler moves, colors follow instantly: restarting the fade on every
+   step made phones recalculate styles each frame (see WeatherApp scrub). */
+:root[data-scrubbing] {
+  transition: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     transition: none;

@@ -1,10 +1,11 @@
 "use client";
 
 import { MotionConfig } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/en";
 import { setPreferenceCookie } from "@/lib/cookies";
+import { useNow } from "@/lib/hooks/use-now";
 import { useWheelScrub } from "@/lib/hooks/use-wheel-scrub";
 import { deriveScene } from "@/lib/scene";
 import { themeToCss } from "@/lib/sky/theme";
@@ -33,15 +34,36 @@ export function WeatherApp({
 }: WeatherAppProps) {
   const [unit, setUnit] = useState(initialUnit);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [selected, setSelected] = useState(forecast.current.time);
-  const scene = deriveScene(forecast, selected);
-  const first = forecast.hours[0]?.time ?? selected;
-  const last = forecast.hours.at(-1)?.time ?? selected;
+  const now = useNow(forecast.current.time);
+  const first = forecast.hours[0]?.time ?? now;
+  const last = forecast.hours.at(-1)?.time ?? now;
+  const clamp = (time: number) => Math.min(Math.max(time, first), last);
+  // null follows the clock (live); a number is the moment the person picked.
+  const [picked, setPicked] = useState<number | null>(null);
+  const selected = picked ?? clamp(now);
+  const scene = deriveScene(forecast, selected, now);
+  const scrubEnd = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  function scrub(move: (time: number) => number) {
+    // Colors follow instantly while the ruler moves; the fade comes back 300 ms after it stops.
+    const root = document.documentElement;
+    root.dataset.scrubbing = "";
+    clearTimeout(scrubEnd.current);
+    scrubEnd.current = setTimeout(() => delete root.dataset.scrubbing, 300);
+    setPicked((time) => clamp(move(time ?? clamp(now))));
+  }
+
+  useEffect(
+    () => () => {
+      clearTimeout(scrubEnd.current);
+      delete document.documentElement.dataset.scrubbing;
+    },
+    [],
+  );
 
   useWheelScrub({
     enabled: !searchOpen,
-    onDelta: (seconds) =>
-      setSelected((time) => Math.min(Math.max(time + seconds, first), last)),
+    onDelta: (seconds) => scrub((time) => time + seconds),
   });
 
   useEffect(() => {
@@ -80,7 +102,7 @@ export function WeatherApp({
           locale={locale}
           dict={dict}
           onOpenSearch={() => setSearchOpen(true)}
-          onBackToLive={() => setSelected(forecast.current.time)}
+          onBackToLive={() => setPicked(null)}
         />
         <main className="flex flex-1 flex-col items-center justify-center gap-3 py-2 text-(--ink-mid) md:gap-6 md:py-4">
           <SunArc
@@ -102,12 +124,12 @@ export function WeatherApp({
         <Timeline
           hours={forecast.hours}
           value={selected}
-          onChange={setSelected}
+          onChange={(value) => scrub(() => value)}
           timeZone={forecast.timezone}
           locale={locale}
           unit={unit}
           dict={dict}
-          now={forecast.current.time}
+          now={now}
           country={forecast.place.country}
         />
         <Footer forecast={forecast} locale={locale} dict={dict} />
