@@ -29,6 +29,7 @@ export const en = {
   },
   footer: {
     updated: "Updated",
+    data: "Data",
   },
   degrees: "degrees",
   yourLocation: "Your location",
