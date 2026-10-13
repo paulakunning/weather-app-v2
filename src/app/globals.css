@@ -5,6 +5,20 @@
   --font-sans: var(--font-manrope);
 }
 
+@theme {
+  --animate-rain: rain 1s linear infinite;
+
+  /* Falls down and to the left; the 8° tilt matches that path. */
+  @keyframes rain {
+    from {
+      transform: translate(0, -20vh) rotate(8deg);
+    }
+    to {
+      transform: translate(-18vh, 120vh) rotate(8deg);
+    }
+  }
+}
+
 @property --sky-top {
   syntax: "<color>";
   inherits: true;
@@ -64,11 +78,17 @@
   initial-value: 0;
 }
 
+@property --rain-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
 /* Registered properties can be animated, so the sky and inks fade between scenes. */
 :root {
   transition-property:
     --sky-top, --sky-mid, --sky-bottom, --ink-top, --ink-top-2, --ink-mid,
-    --ink-mid-2, --ink-bottom, --ink-bottom-2, --cloud-opacity;
+    --ink-mid-2, --ink-bottom, --ink-bottom-2, --cloud-opacity, --rain-opacity;
   transition-duration: 600ms;
   transition-timing-function: ease;
 }

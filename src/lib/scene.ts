@@ -40,6 +40,10 @@ export function deriveScene(forecast: Forecast, selected: number): Scene {
   const condition = conditionFromCode(point.weatherCode);
   const sun = sunTimesFor(forecast.sun, selected);
   const altitude = sunAltitude(selected, place.latitude, place.longitude);
+  // Drops only when the code says rain; millimeters set how strong they look.
+  const rainOpacity = isRainy(condition)
+    ? Math.min(0.3 + point.precipitation * 0.15, 0.8)
+    : 0;
 
   return {
     point,
@@ -51,6 +55,7 @@ export function deriveScene(forecast: Forecast, selected: number): Scene {
       altitude,
       point.cloudCover,
       isRainy(condition) || point.precipitation > 0,
+      rainOpacity,
     ),
   };
 }
