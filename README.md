@@ -2,7 +2,7 @@
 
 The sky of any city, right now. A bilingual weather app where the whole screen is the city's live sky, computed from real data, and a 24-hour ruler lets you travel through the day.
 
-**Live demo:** coming soon.
+**Live demo:** [pk-weather-app-v2.vercel.app](https://pk-weather-app-v2.vercel.app)
 
 <p>
   <img src="docs/screenshots/desktop.jpg" alt="Honolulu at golden hour: a violet-to-pink sky, a large 26°, the sun near sunset on the arc and the 24-hour ruler" width="72%">
