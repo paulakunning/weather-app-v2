@@ -24,8 +24,8 @@ export function Temperature({
 
   return (
     <div className="flex flex-col items-center text-center">
-      {/* Sizes are the Figma 250 px numeral scaled down on narrow screens. */}
-      <p className="font-display relative text-[min(250px,40vw)] leading-none tracking-[-0.05em] [text-shadow:0_0_80px_rgba(247,171,130,0.2),0_0_35px_rgba(255,230,215,0.4)]">
+      {/* The Figma 250 px numeral, scaled down on narrow or short screens so everything fits without scrolling. */}
+      <p className="font-display relative text-[min(250px,30vw,24dvh)] leading-none tracking-[-0.05em] [text-shadow:0_0_80px_rgba(247,171,130,0.2),0_0_35px_rgba(255,230,215,0.4)]">
         <AnimatePresence initial={false} mode="popLayout">
           <motion.span
             key={value}
@@ -46,7 +46,7 @@ export function Temperature({
         </span>
         <span className="sr-only"> {dict.degrees}</span>
       </p>
-      <p className="mt-4 text-2xl/7 font-light tracking-[0.6px]">
+      <p className="mt-2 text-2xl/7 font-light tracking-[0.6px] md:mt-4">
         {dict.conditions[condition]}
       </p>
       <p className="mt-1.5 text-sm/[22px] tracking-[0.7px] text-(--ink-mid-2)">

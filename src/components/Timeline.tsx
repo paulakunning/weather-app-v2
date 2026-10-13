@@ -76,7 +76,7 @@ export function Timeline({
           aria-label={dict.timeline.label}
           aria-valuetext={`${formatTime(value, timeZone, locale)}, ${temperature} ${dict.degrees}`}
           // Invisible but on top: dragging, keys and screen readers all use the native slider.
-          className="peer absolute inset-0 z-10 w-full cursor-pointer opacity-0"
+          className="peer absolute inset-0 z-10 w-full cursor-pointer touch-pan-y opacity-0"
         />
         <div aria-hidden className="pointer-events-none relative h-[60px]">
           <div className="absolute inset-x-0 top-[31px] h-px bg-(--ink-bottom)/20" />

@@ -24,10 +24,15 @@ export type Scene = {
   theme: SkyTheme;
 };
 
-export function deriveScene(forecast: Forecast, selected: number): Scene {
+// `now` defaults to the data's own time so the server and the first client render
+// agree; after mount the client passes the device clock.
+export function deriveScene(
+  forecast: Forecast,
+  selected: number,
+  now = forecast.current.time,
+): Scene {
   const { current, hours, place } = forecast;
-  // current.time, not Date.now(): server and client must derive the same scene.
-  const status = timelineStatus(selected, current.time);
+  const status = timelineStatus(selected, now);
   const point =
     status === "live"
       ? current
