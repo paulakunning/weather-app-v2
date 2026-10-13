@@ -14,10 +14,14 @@ export default function ErrorPage({
   const dict = getDictionary(isLocale(lang) ? lang : defaultLocale);
 
   return (
-    <main>
-      <h1>{dict.error.title}</h1>
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-3 px-4 text-center">
+      <h1 className="font-display text-4xl md:text-5xl">{dict.error.title}</h1>
       {/* retry() re-fetches the segment; reset() would only re-render the failed result. */}
-      <button type="button" onClick={() => retry()}>
+      <button
+        type="button"
+        onClick={() => retry()}
+        className="mt-4 cursor-pointer border-b border-current pb-1 text-sm tracking-[0.7px]"
+      >
         {dict.error.retry}
       </button>
     </main>
