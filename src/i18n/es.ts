@@ -1,7 +1,7 @@
 import type { Dictionary } from "./en";
 
 export const es: Dictionary = {
-  brand: "WEATHER APP",
+  brand: "Weather App",
   status: {
     live: "EN VIVO",
     forecast: "PRONÓSTICO",

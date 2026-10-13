@@ -220,7 +220,7 @@ type Forecast = {
 ### Header
 
 - Left: city name (opens the search) · real local time (updates every minute) + time-zone abbreviation.
-- Right: status indicator · °C/°F · EN/ES · search button · "WEATHER APP" brand. The settings button is not in v1.
+- Right: status indicator · °C/°F · EN/ES · search button · "Weather App" brand (as written, not uppercase). The settings button is not in v1.
 - Status indicator: "LIVE" when the ruler is at the current moment; "FORECAST" when it is in the future, "EARLIER" when it is in the past. Clicking it returns to the current moment.
 
 ### Sun arc
