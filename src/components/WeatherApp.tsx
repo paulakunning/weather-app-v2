@@ -46,12 +46,12 @@ export function WeatherApp({
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      // "/" opens search, unless the person is typing in a field.
+      // "/" opens search, unless the person is typing in a text field (the ruler is a range input).
       const target = event.target;
       if (event.key !== "/") return;
       if (
         target instanceof Element &&
-        target.closest("input, textarea, [contenteditable]")
+        target.closest('input:not([type="range"]), textarea, [contenteditable]')
       )
         return;
       event.preventDefault();
