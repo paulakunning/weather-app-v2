@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/en";
 import { setPreferenceCookie } from "@/lib/cookies";
+import { useWheelScrub } from "@/lib/hooks/use-wheel-scrub";
 import { deriveScene } from "@/lib/scene";
 import { themeToCss } from "@/lib/sky/theme";
 import { UNIT_COOKIE, type TemperatureUnit } from "@/lib/units";
@@ -34,6 +35,14 @@ export function WeatherApp({
   const [searchOpen, setSearchOpen] = useState(false);
   const [selected, setSelected] = useState(forecast.current.time);
   const scene = deriveScene(forecast, selected);
+  const first = forecast.hours[0]?.time ?? selected;
+  const last = forecast.hours.at(-1)?.time ?? selected;
+
+  useWheelScrub({
+    enabled: !searchOpen,
+    onDelta: (seconds) =>
+      setSelected((time) => Math.min(Math.max(time + seconds, first), last)),
+  });
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
