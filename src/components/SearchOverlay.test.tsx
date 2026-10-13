@@ -144,3 +144,53 @@ describe("SearchOverlay", () => {
     expect(onClose).toHaveBeenCalled();
   });
 });
+
+describe("Use my location", () => {
+  function stubGeolocation(geolocation: Partial<Geolocation> | undefined) {
+    Object.defineProperty(navigator, "geolocation", {
+      value: geolocation,
+      configurable: true,
+    });
+  }
+
+  afterEach(() => stubGeolocation(undefined));
+
+  function clickUseMyLocation() {
+    fireEvent.click(screen.getByRole("button", { name: "Use my location" }));
+  }
+
+  it("goes to the rounded coordinates", () => {
+    stubGeolocation({
+      getCurrentPosition: (success) =>
+        success({
+          coords: { latitude: -34.61315, longitude: -58.37723 },
+        } as GeolocationPosition),
+    });
+    const { onClose } = setup();
+    clickUseMyLocation();
+    expect(push).toHaveBeenCalledWith("/en?lat=-34.6132&lon=-58.3772");
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it.each([
+    [1, "Location permission was denied"],
+    [2, "We couldn't get your location"],
+  ])("explains error code %i", (code, message) => {
+    stubGeolocation({
+      getCurrentPosition: (_success, error) =>
+        error?.({ code } as GeolocationPositionError),
+    });
+    setup();
+    clickUseMyLocation();
+    expect(screen.getByText(message)).toBeInTheDocument();
+  });
+
+  it("explains when the browser has no geolocation", () => {
+    stubGeolocation(undefined);
+    setup();
+    clickUseMyLocation();
+    expect(
+      screen.getByText("We couldn't get your location"),
+    ).toBeInTheDocument();
+  });
+});

@@ -14,8 +14,13 @@ export function parseCoordinates(
 export type Hemispheres = { N: string; S: string; E: string; W: string };
 
 // toFixed rounds the binary value: (34.61315).toFixed(4) is "34.6131".
+// Rounding the magnitude keeps halves going away from zero on both sides.
+export function roundCoordinate(value: number): number {
+  return Math.sign(value) * (Math.round(Math.abs(value) * 1e4) / 1e4);
+}
+
 function fourDecimals(value: number): string {
-  return (Math.round(Math.abs(value) * 1e4) / 1e4).toFixed(4);
+  return roundCoordinate(Math.abs(value)).toFixed(4);
 }
 
 export function formatCoordinates(

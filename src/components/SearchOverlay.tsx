@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/en";
+import { roundCoordinate } from "@/lib/coordinates";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { placePath } from "@/lib/slug";
 import type { Place } from "@/lib/weather/types";
@@ -69,6 +70,7 @@ function SearchBox({
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState<SearchResult | null>(null);
   const [highlight, setHighlight] = useState({ query: "", index: -1 });
+  const [locationError, setLocationError] = useState("");
   const debounced = useDebouncedValue(query.trim(), 300);
   const isSearching = debounced.length >= 2;
 
@@ -123,6 +125,28 @@ function SearchBox({
     onClose();
   }
 
+  function goToMyLocation() {
+    if (!navigator.geolocation) {
+      setLocationError(dict.search.locationUnavailable);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const lat = roundCoordinate(coords.latitude);
+        const lon = roundCoordinate(coords.longitude);
+        router.push(`/${locale}?lat=${lat}&lon=${lon}`);
+        onClose();
+      },
+      // Code 1 is PERMISSION_DENIED; anything else means no position.
+      (error) =>
+        setLocationError(
+          error.code === 1
+            ? dict.search.locationDenied
+            : dict.search.locationUnavailable,
+        ),
+    );
+  }
+
   function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
@@ -152,10 +176,20 @@ function SearchBox({
         spellCheck={false}
         maxLength={100}
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setLocationError("");
+        }}
         onKeyDown={onKeyDown}
         className="font-display w-full border-b border-white/30 bg-transparent pb-3 text-4xl tracking-[-0.7px] outline-none placeholder:text-white/50 focus-visible:border-white md:text-6xl"
       />
+      <button
+        type="button"
+        onClick={goToMyLocation}
+        className="mt-4 cursor-pointer text-sm tracking-[0.7px] text-white/75 underline-offset-4 hover:text-white hover:underline"
+      >
+        {dict.search.useMyLocation}
+      </button>
       <ul
         id={listId}
         role="listbox"
@@ -180,7 +214,7 @@ function SearchBox({
         ))}
       </ul>
       <p role="status" className="mt-4 text-sm text-white/75">
-        {message}
+        {locationError || message}
       </p>
     </div>
   );
