@@ -40,3 +40,14 @@ describe("WeatherApp search", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 });
+
+describe("WeatherApp timeline", () => {
+  it("leaves LIVE when the ruler moves and comes back from the status button", () => {
+    renderApp();
+    fireEvent.keyDown(screen.getByRole("slider"), { key: "ArrowRight" });
+    const status = screen.getByRole("button", { name: "FORECAST" });
+
+    fireEvent.click(status);
+    expect(screen.getByRole("button", { name: "LIVE" })).toBeDisabled();
+  });
+});
