@@ -59,6 +59,15 @@ export function SearchOverlay({
 
 type SearchResult = { query: string; places: Place[]; failed: boolean };
 
+function Spinner() {
+  return (
+    <span
+      aria-hidden
+      className="block size-4 animate-spin rounded-full border-[1.5px] border-white/75 border-t-transparent motion-reduce:animate-none"
+    />
+  );
+}
+
 function SearchBox({
   onClose,
   locale,
@@ -112,6 +121,9 @@ function SearchBox({
   const current =
     isSearching && response?.query === debounced ? response : null;
   const places = current?.places ?? [];
+  // From the keystroke until this exact text has its answer (debounce + request).
+  const typed = query.trim();
+  const isLoading = typed.length >= 2 && response?.query !== typed;
   const active = highlight.query === debounced ? highlight.index : -1;
   const message = current?.failed
     ? dict.search.unavailable
@@ -162,27 +174,36 @@ function SearchBox({
 
   return (
     <div className="w-full max-w-[720px]">
-      <input
-        ref={inputRef}
-        type="text"
-        role="combobox"
-        aria-label={dict.search.open}
-        aria-expanded={places.length > 0}
-        aria-controls={listId}
-        aria-autocomplete="list"
-        aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
-        placeholder={dict.search.placeholder}
-        autoComplete="off"
-        spellCheck={false}
-        maxLength={100}
-        value={query}
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setLocationError("");
-        }}
-        onKeyDown={onKeyDown}
-        className="font-display w-full border-b border-white/30 bg-transparent pb-3 text-4xl tracking-[-0.7px] outline-none placeholder:text-white/50 focus-visible:border-white md:text-6xl"
-      />
+      <div className="relative">
+        <input
+          ref={inputRef}
+          type="text"
+          role="combobox"
+          aria-label={dict.search.open}
+          aria-expanded={places.length > 0}
+          aria-controls={listId}
+          aria-autocomplete="list"
+          aria-activedescendant={
+            active >= 0 ? `${listId}-${active}` : undefined
+          }
+          placeholder={dict.search.placeholder}
+          autoComplete="off"
+          spellCheck={false}
+          maxLength={100}
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setLocationError("");
+          }}
+          onKeyDown={onKeyDown}
+          className="font-display w-full border-b border-white/30 bg-transparent pr-8 pb-3 text-4xl tracking-[-0.7px] outline-none placeholder:text-white/50 focus-visible:border-white md:text-6xl"
+        />
+        {isLoading && (
+          <span className="absolute top-[calc(50%-6px)] right-0 -translate-y-1/2">
+            <Spinner />
+          </span>
+        )}
+      </div>
       <button
         type="button"
         onClick={goToMyLocation}
@@ -214,7 +235,12 @@ function SearchBox({
         ))}
       </ul>
       <p role="status" className="mt-4 text-sm text-white/75">
-        {locationError || message}
+        {locationError ||
+          (isLoading ? (
+            <span className="sr-only">{dict.search.searching}</span>
+          ) : (
+            message
+          ))}
       </p>
     </div>
   );
