@@ -19,10 +19,10 @@ export const SKY_KEYFRAMES: readonly { altitude: number; colors: SkyColors }[] =
       altitude: -4,
       colors: { top: "#1d1b4a", mid: "#4a3a6e", bottom: "#c0708a" },
     },
-    // Golden hour (recalibrated from Figma in Task 6.1)
+    // Golden hour: the Figma gradient's 0%, 62% and 100% stops (docs/design/figma-tokens.md)
     {
       altitude: 4,
-      colors: { top: "#211b3b", mid: "#4b3555", bottom: "#f4a27a" },
+      colors: { top: "#0b0f28", mid: "#573854", bottom: "#fca87d" },
     },
     // Day
     {

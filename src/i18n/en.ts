@@ -3,7 +3,7 @@ import type { CompassPoint } from "@/lib/units";
 import type { WeatherCondition } from "@/lib/weather-codes";
 
 export const en = {
-  brand: "WEATHER APP",
+  brand: "Weather App",
   status: {
     live: "LIVE",
     forecast: "FORECAST",
