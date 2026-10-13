@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+@theme inline {
+  --font-display: var(--font-bodoni);
+  --font-sans: var(--font-manrope);
+}
