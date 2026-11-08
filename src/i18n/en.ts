@@ -23,7 +23,8 @@ export const en = {
     sunset: "Sunset",
   },
   timeline: {
-    title: "24-hour timeline",
+    hint: "Drag to see other hours",
+    hintShort: "Drag",
     now: "now",
     label: "Time of day",
   },
