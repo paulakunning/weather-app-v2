@@ -21,8 +21,9 @@ export const es: Dictionary = {
     sunset: "Ocaso",
   },
   timeline: {
-    title: "Cronología de 24 horas",
-    now: "hora actual",
+    hint: "Arrastrá para ver otras horas",
+    hintShort: "Arrastrá",
+    now: "ahora",
     label: "Hora del día",
   },
   footer: {

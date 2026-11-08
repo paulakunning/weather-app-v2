@@ -52,14 +52,17 @@ export function Timeline({
   return (
     <section className="mx-auto w-full max-w-[1152px] text-(--ink-bottom)">
       <div className="flex items-center justify-between gap-4 px-2 text-[11px]/[16.5px]">
-        <p className="tracking-[1.1px] text-(--ink-bottom-2) uppercase max-md:hidden">
-          {dict.timeline.title}
+        <p className="tracking-[1.1px] whitespace-nowrap text-(--ink-bottom-2) uppercase">
+          <span aria-hidden>‹ </span>
+          <span className="max-md:hidden">{dict.timeline.hint}</span>
+          <span className="md:hidden">{dict.timeline.hintShort}</span>
+          <span aria-hidden> ›</span>
         </p>
         <p className="flex items-center gap-1.5 font-medium tracking-[0.55px] whitespace-nowrap lowercase">
           <span aria-hidden className="size-1.5 rounded-full bg-[#f7ab82]" />
           {dict.timeline.now} {formatTime(now, timeZone, locale)}
         </p>
-        <p className="tracking-[1.1px] text-(--ink-bottom-2) uppercase">
+        <p className="text-right tracking-[1.1px] text-(--ink-bottom-2) uppercase">
           {country}
         </p>
       </div>
